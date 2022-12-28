@@ -36,9 +36,33 @@ jobs:
         echo "Compiling tests"
         for i in $(seq 1 1 `ls ./test | wc -l`)
         do
-          echo "Starting test n°$i"
+          echo "Compiling test n°$i"
           cd test/test_$i
           cargo build --release
           cargo build --release --target=i686-unknown-linux-gnu
           cd ../..
+        done
+    - name: run_tests_32
+      run: |
+        echo "Running 32bit tests"
+        for i in $(seq 1 1 `ls ./test | wc -l`)
+        do
+          echo "Starting test n°$i"
+          cd test/test_$i/target/i686-unknown-linux-gnu/release
+          cerberus ./test_$i -output ./test_$i-syms
+          result=`nm test_$i-syms`
+          cd ../..
+          expected_result=`cat result.txt`
+          IFS='\n' read -ra expected_result_arr <<< '$expected_result'
+          for expected_result_line in "${expected_result_arr[@]}"; do
+            if [[ $result != *'$expected_result_line'* ]]
+            then
+              echo "Failure !"
+              echo "Content of result :"
+              cat $result
+              exit 1
+            fi
+          done
+          echo "Success !"
+          cd ../../
         done
