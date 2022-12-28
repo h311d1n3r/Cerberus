@@ -2,6 +2,7 @@ import logging
 import os
 import sys
 import shutil
+import argparse
 from uuid import uuid4
 from elf_handler import ELFHandler
 from log import LogFormatter
@@ -29,6 +30,12 @@ def print_help_message():
     print('\033[0;'+str(LogFormatter.LOG_COLORS['CYAN'])+'m_____________________________________\n')
     print('\033[0;'+str(LogFormatter.LOG_COLORS['CYAN'])+'mSyntax: \033[1;'+
         str(LogFormatter.LOG_COLORS['YELLOW'])+'mcerberus binary [-param value] [--flag]\n')
+    print('\033[0;'+str(LogFormatter.LOG_COLORS['CYAN'])+'mParameters:')
+    print('\033[1;'+str(LogFormatter.LOG_COLORS['YELLOW'])+'m   output\033[0;'+str(LogFormatter.LOG_COLORS['CYAN'])+'m'+
+        ' -> Specifies the path for the resulting ELF file.')
+    print('\033[0;'+str(LogFormatter.LOG_COLORS['CYAN'])+'m\nFlags:')
+    print('\033[1;'+str(LogFormatter.LOG_COLORS['YELLOW'])+'m   help\033[0;'+str(LogFormatter.LOG_COLORS['CYAN'])+'m'+
+        ' -> Displays this message.')
 
 def manage_crates(elf_handler):
     if len(elf_handler.crates) > 0:
@@ -62,9 +69,19 @@ def manage_crates(elf_handler):
 
 if __name__ == '__main__':
     init_logging()
-    if len(sys.argv) >= 2:
-        out_file = sys.argv[1]+'-patched'
-        elf_handler = ELFHandler(sys.argv[1])
+    parser = argparse.ArgumentParser(add_help=False)
+    parser.add_argument('binary', nargs='?', type=str)
+    parser.add_argument('-output', dest='out_file', type=str)
+    parser.add_argument('--help', action='store_true')
+    args = parser.parse_args()
+    if args.help:
+        print_help_message()
+        sys.exit(0)
+    if args.binary:
+        out_file = args.binary+'-patched'
+        if args.out_file:
+            out_file = args.out_file
+        elf_handler = ELFHandler(args.binary)
         if manage_crates(elf_handler):
             session_dir = '.cerberus-' + uuid4().hex
             while os.path.exists(session_dir):

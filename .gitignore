@@ -1,1 +1,5 @@
 __pycache__/
+.cerberus*/
+*.spec
+build/
+dist/
