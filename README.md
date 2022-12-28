@@ -53,7 +53,7 @@ The following command will try to unstrip the file ./rust_example into a new ELF
 Here is a comparison of the main function in the two files using Binary Ninja :  
 
 <p align="center">
-  <img src="https://i.imgur.com/NjsspzI.png" alt="before.png"/>
+  <img src="https://i.imgur.com/uvpC63E.png" alt="before.png"/>
 </p>
 
 <p align="center">
