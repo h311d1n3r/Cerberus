@@ -1,0 +1,3 @@
+aes::soft::fixslice::aes128_decrypt
+aes::soft::fixslice::aes128_encrypt
+<aes::ni::Aes128Enc as crypto_common::KeyInit>::new
