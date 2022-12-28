@@ -1,0 +1,31 @@
+name: main
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  check_app:
+    runs-on: ubuntu-22.04
+    steps:
+    - name: clone_project
+      uses: actions/checkout@v3
+    - name: apt_dependencies
+      run: apt install binutils
+    - name: setup_rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+    - name: setup_python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    - name: python_dependencies
+      run: pip3 install pyinstaller lief
+    - name: compile
+      run: pyinstaller src/cerberus.py src/*.py --onefile --clean
+    - name: append_path
+      run: echo "`pwd`/dist" >> $GITHUB_PATH
