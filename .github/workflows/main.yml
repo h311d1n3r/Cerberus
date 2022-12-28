@@ -14,7 +14,7 @@ jobs:
     - name: clone_project
       uses: actions/checkout@v3
     - name: apt_dependencies
-      run: sudo apt install binutils
+      run: sudo apt install binutils gcc-multilib g++-multilib
     - name: setup_rust
       uses: actions-rs/toolchain@v1
       with:
