@@ -37,6 +37,8 @@ jobs:
         for i in $(seq 1 1 `ls ./test | wc -l`)
         do
           echo "Starting test n°$i"
+          cd test/test_$i
           cargo build --release
           cargo build --release --target=i686-unknown-linux-gnu
+          cd ../..
         done
