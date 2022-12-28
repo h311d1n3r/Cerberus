@@ -27,21 +27,47 @@ class ELFHandler:
         if os.path.exists(elf_path):
             self.elf_path = elf_path
             self.elf = ELF.parse(elf_path)
-            with open(elf_path, 'rb') as elf_file:
-                elf_content = elf_file.read()
-                crate_matches = re.findall(b'/.cargo/(.+?)\.rs', elf_content)
-                for crate_match in crate_matches:
-                    crate = crate_match.split(b'/')[3].decode()
-                    crate_name = re.split('\d+', crate)[0]
-                    crate_name = crate_name[0:len(crate_name)-1]
-                    crate_version = crate[len(crate_name)+1:]
-                    if crate_name not in self.crates:
-                        self.crates[crate_name] = crate_version
-            elf_file.close()
+            if self.elf.has_section('.symtab') or self.elf.has_section('.strtab'):
+                logging.error('ELF file doesn\'t seem to be stripped.')
+            self.elf_arch = self.elf.header.machine_type
+            if self.elf_arch == ELF.ARCH.x86_64 or self.elf_arch == ELF.ARCH.i386:
+                with open(elf_path, 'rb') as elf_file:
+                    elf_content = elf_file.read()
+                    crate_matches = re.findall(b'/.cargo/(.+?)\.rs', elf_content)
+                    for crate_match in crate_matches:
+                        crate = crate_match.split(b'/')[3].decode()
+                        crate_name = re.split('\d+', crate)[0]
+                        crate_name = crate_name[0:len(crate_name)-1]
+                        crate_version = crate[len(crate_name)+1:]
+                        if crate_name not in self.crates:
+                            self.crates[crate_name] = crate_version
+                elf_file.close()
+            else:
+                logging.error('Unsupported architecture detected in ELF header.')
+                sys.exit(1)
         else:
             logging.error('ELF file \033[0;'+str(LogFormatter.LOG_COLORS['WHITE'])+'m'+
                 elf_path+'\033[0;'+str(LogFormatter.FORMAT_COLORS[logging.ERROR])+'m doesn\'t exist.')
             sys.exit(1)
+
+    def check_architecture_installation(self, architecture):
+        installed_list = subprocess.run(['rustup','target','list'], capture_output=True)
+        installed_list = installed_list.stdout.decode().split('\n')
+        for installed_line in installed_list:
+            if architecture in installed_line:
+                if 'installed' not in installed_line:
+                    logging.info('Architecture \033[0;'+str(LogFormatter.LOG_COLORS['WHITE'])+'m'+architecture+'\033[0;'+
+                        str(LogFormatter.FORMAT_COLORS[logging.INFO])+'m doesn\'t seem to be installed.')
+                    usr_install_arch = input('\033[0;'+str(LogFormatter.FORMAT_COLORS[logging.INFO])+'m'+
+                        LogFormatter.FORMAT_PREFIXES[logging.INFO]+'Install architecture ? (Y/n): ').strip()
+                    if not usr_install_arch.lower().startswith('n'):
+                        logging.info('Proceeding to installation...')
+                        try:
+                            subprocess.run(['rustup','target','install',architecture], capture_output=True)
+                            logging.success('Done !')
+                        except:
+                            logging.error('An error occured when installing architecture')
+                break
 
     def download_and_build_crates(self, session_dir):
         logging.info('Downloading '+str(len(self.crates))+' crates...')
@@ -110,8 +136,12 @@ class ELFHandler:
             return False
         if version_output.stdout.startswith(b'cargo'):
             for crate_dir in os.listdir(session_dir):
+                build_params = ['cargo','build','--release']
+                if self.elf_arch == ELF.ARCH.i386:
+                    build_params.append('--target=i686-unknown-linux-gnu')
+                    self.check_architecture_installation('i686-unknown-linux-gnu')
                 try:
-                    build_output = subprocess.run(['cargo','build','--release'], cwd=session_dir+'/'+crate_dir, capture_output=True)
+                    build_output = subprocess.run(build_params, cwd=session_dir+'/'+crate_dir, capture_output=True)
                 except:
                     logging.error('An error occured when building crate \033[0;'+
                         str(LogFormatter.LOG_COLORS['WHITE'])+'m'+crate_dir)
@@ -171,6 +201,8 @@ class ELFHandler:
         logging.info('Checking for matches in built crates...')
         for crate_dir in os.listdir(session_dir):
             release_path = session_dir+'/'+crate_dir+'/target/release'
+            if self.elf_arch == ELF.ARCH.i386:
+                release_path = session_dir+'/'+crate_dir+'/target/i686-unknown-linux-gnu/release'
             for release_file_name in os.listdir(release_path):
                 if release_file_name.endswith(".so"):
                     lib_elf = ELF.parse(release_path+'/'+release_file_name)
@@ -211,9 +243,10 @@ class ELFHandler:
                             continue
                         _, func_name = self.part_matches[func_address]
                         self.matches[func_address] = func_name
-        logging.success('Done ! '+str(len(self.matches))+' matches !')
+        logging.success('Done ! '+str(len(self.matches))+' matches.')
 
     def patch_elf(self, out_path):
+        logging.info('Patching to new ELF...')
         symtab_section             = ELF.Section()
         symtab_section.name        = ".symtab"
         symtab_section.type        = ELF.SECTION_TYPES.SYMTAB
@@ -252,3 +285,4 @@ class ELFHandler:
             symbol         = self.elf.add_static_symbol(symbol)
         
         self.elf.write(out_path)
+        logging.success('Done !')

@@ -54,7 +54,7 @@ def manage_crates(elf_handler):
         logging.info('Current crates list :')
         for crate_name in elf_handler.crates:
             crate_version = elf_handler.crates[crate_name]
-            logging.success('- '+crate_name+': '+'\033[0;'+str(LogFormatter.LOG_COLORS['BRIGHT_GREEN'])+'m'+
+            logging.success('- '+crate_name+': \033[0;'+str(LogFormatter.LOG_COLORS['BRIGHT_GREEN'])+'m'+
                 'v'+crate_version)
     if len(elf_handler.crates) >= 1:
         return True
@@ -63,6 +63,7 @@ def manage_crates(elf_handler):
 if __name__ == '__main__':
     init_logging()
     if len(sys.argv) >= 2:
+        out_file = sys.argv[1]+'-patched'
         elf_handler = ELFHandler(sys.argv[1])
         if manage_crates(elf_handler):
             session_dir = '.cerberus-' + uuid4().hex
@@ -72,7 +73,9 @@ if __name__ == '__main__':
             if elf_handler.download_and_build_crates(session_dir):
                 elf_handler.gen_hashes(session_dir)
                 elf_handler.compare_hashes(session_dir)
-                elf_handler.patch_elf(sys.argv[1]+'-patched')
+                elf_handler.patch_elf(out_file)
+                logging.success('End of execution. ELF file \033[0;'+str(LogFormatter.LOG_COLORS['WHITE'])+'m'+
+                    out_file+'\033[0;'+str(LogFormatter.FORMAT_COLORS[logging.SUCCESS])+'m is your result.')
             shutil.rmtree(session_dir)
     else:
         print_help_message()
