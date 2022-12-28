@@ -1,6 +1,6 @@
 # Cerberus
 ## Description
-### A Python tool to unstrip Rust binaries
+### A Python tool to unstrip Rust binaries on Linux
 **Cerberus** is the tool you want to use to make Rust static analysis a lot easier.  
 Based on hashing and scoring systems, it can retrieve lots of symbol names.
 ## How does it work ?
