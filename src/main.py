@@ -6,6 +6,13 @@ from uuid import uuid4
 from elf_handler import ELFHandler
 from log import LogFormatter
 
+TOOL_TITLE = "   ___         _       \n\
+  / __|___ _ _| |__  ___ _ _ _  _ ___\n\
+ | (__/ -_) '_| '_ \/ -_) '_| || (_-<\n\
+  \___\___|_| |_.__/\___|_|  \_,_/__/\n"
+VERSION = '1.0-alpha'
+AUTHOR = 'h311d1n3r'
+
 def init_logging():
     fmt = LogFormatter()
     hdlr = logging.StreamHandler(sys.stdout)
@@ -14,7 +21,14 @@ def init_logging():
     logging.root.setLevel(logging.DEBUG)
 
 def print_help_message():
-    pass
+    print('\033[0;'+str(LogFormatter.LOG_COLORS['CYAN'])+'m'+TOOL_TITLE)
+    print('\033[0;'+str(LogFormatter.LOG_COLORS['CYAN'])+'m Version: \033[1;'+
+        str(LogFormatter.LOG_COLORS['WHITE'])+'m'+VERSION)
+    print('\033[0;'+str(LogFormatter.LOG_COLORS['CYAN'])+'m Author: \033[1;'+
+        str(LogFormatter.LOG_COLORS['WHITE'])+'m'+AUTHOR)
+    print('\033[0;'+str(LogFormatter.LOG_COLORS['CYAN'])+'m_____________________________________\n')
+    print('\033[0;'+str(LogFormatter.LOG_COLORS['CYAN'])+'mSyntax: \033[1;'+
+        str(LogFormatter.LOG_COLORS['YELLOW'])+'mcerberus binary [-param value] [--flag]\n')
 
 def manage_crates(elf_handler):
     if len(elf_handler.crates) > 0:
