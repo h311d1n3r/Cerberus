@@ -50,9 +50,9 @@ jobs:
           echo "Starting test n°$i"
           cd test/test_$i/target/i686-unknown-linux-gnu/release
           echo 'N' | cerberus ./test_$i -output ./test_$i-syms
-          result=`nm test_$i-syms`
+          result=$(nm test_$i-syms)
           cd ../../..
-          expected_result=`cat result.txt`
+          expected_result=$(cat result.txt)
           IFS='\n' read -ra expected_result_arr <<< '$expected_result'
           for expected_result_line in "${expected_result_arr[@]}"; do
             if [[ $result != *'$expected_result_line'* ]]
