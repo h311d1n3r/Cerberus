@@ -52,14 +52,40 @@ jobs:
           echo 'N' | cerberus ./test_$i -output ./test_$i-syms
           result=$(nm test_$i-syms)
           cd ../../..
-          expected_result=$(cat result.txt)
-          IFS='\n' read -ra expected_result_arr <<< '$expected_result'
-          for expected_result_line in "${expected_result_arr[@]}"; do
-            if [[ $result != *'$expected_result_line'* ]]
+          expected_result=$(cat 'result.txt')
+          IFS='\n' read -ra expected_result_arr <<< $expected_result
+          for expected_result_line in ${expected_result_arr[@]};
+          do
+            if [[ $result != *$expected_result_line* ]]
             then
               echo "Failure !"
               echo "Content of result :"
-              cat $result
+              echo $result
+              exit 1
+            fi
+          done
+          echo "Success !"
+          cd ../../
+        done
+    - name: run_tests_64
+      run: |
+        echo "Running 64bit tests"
+        for i in $(seq 1 1 `ls ./test | wc -l`)
+        do
+          echo "Starting test n°$i"
+          cd test/test_$i/target/release
+          echo 'N' | cerberus ./test_$i -output ./test_$i-syms
+          result=$(nm test_$i-syms)
+          cd ../..
+          expected_result=$(cat 'result.txt')
+          IFS='\n' read -ra expected_result_arr <<< $expected_result
+          for expected_result_line in ${expected_result_arr[@]};
+          do
+            if [[ $result != *$expected_result_line* ]]
+            then
+              echo "Failure !"
+              echo "Content of result :"
+              echo $result
               exit 1
             fi
           done
