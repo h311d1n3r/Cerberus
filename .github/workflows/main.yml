@@ -29,3 +29,14 @@ jobs:
       run: pyinstaller src/cerberus.py src/*.py --onefile --clean
     - name: append_path
       run: echo "`pwd`/dist" >> $GITHUB_PATH
+    - name: compile_tests
+      run: |
+        echo "Installing 32-bit architecture"
+        rustup target install i686-unknown-linux-gnu
+        echo "Compiling tests"
+        for i in $(seq 1 1 `ls ./test | wc -l`)
+        do
+          echo "Starting test n°$i"
+          cargo build --release
+          cargo build --release --target=i686-unknown-linux-gnu
+        done
