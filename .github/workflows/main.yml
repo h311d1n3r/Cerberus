@@ -49,7 +49,7 @@ jobs:
         do
           echo "Starting test n°$i"
           cd test/test_$i/target/i686-unknown-linux-gnu/release
-          cerberus ./test_$i -output ./test_$i-syms
+          echo 'N' | cerberus ./test_$i -output ./test_$i-syms
           result=`nm test_$i-syms`
           cd ../..
           expected_result=`cat result.txt`
