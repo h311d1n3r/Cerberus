@@ -48,16 +48,19 @@ def manage_crates(elf_handler):
         logging.warning('No crate was found in specified ELF file')
     while True:
         usr_more_crates = input('\033[0;'+str(LogFormatter.FORMAT_COLORS[logging.INFO])+'m'+
-            LogFormatter.FORMAT_PREFIXES[logging.INFO]+'Add/Edit crate ? (y/N): ').strip()
+            LogFormatter.FORMAT_PREFIXES[logging.INFO]+'Add/Edit/Remove crate ? (y/N): ').strip()
         if not usr_more_crates.lower().startswith('y'):
             break
         usr_crate_name = input('\033[0;'+str(LogFormatter.FORMAT_COLORS[logging.INFO])+'m'+
             LogFormatter.FORMAT_PREFIXES[logging.INFO]+'Crate name: ').strip()
         usr_crate_version = input('\033[0;'+str(LogFormatter.FORMAT_COLORS[logging.INFO])+'m'+
-            LogFormatter.FORMAT_PREFIXES[logging.INFO]+'Crate version: ').strip()
-        if usr_crate_version.startswith('v'):
-            usr_crate_version = usr_crate_version[1:]
-        elf_handler.crates[usr_crate_name] = usr_crate_version
+            LogFormatter.FORMAT_PREFIXES[logging.INFO]+'Crate version (blank to remove): ').strip()
+        if usr_crate_name in elf_handler.crates and len(usr_crate_version) == 0:
+            del elf_handler.crates[usr_crate_name]
+        else:
+            if usr_crate_version.startswith('v'):
+                usr_crate_version = usr_crate_version[1:]
+            elf_handler.crates[usr_crate_name] = usr_crate_version
         logging.info('Current crates list :')
         for crate_name in elf_handler.crates:
             crate_version = elf_handler.crates[crate_name]

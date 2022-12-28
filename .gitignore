@@ -3,3 +3,5 @@ __pycache__/
 *.spec
 build/
 dist/
+target/
+*.lock
