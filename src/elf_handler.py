@@ -36,8 +36,7 @@ class ELFHandler:
                     crate_matches = re.findall(b'/.cargo/(.+?)\.rs', elf_content)
                     for crate_match in crate_matches:
                         crate = crate_match.split(b'/')[3].decode()
-                        crate_name = re.split('\d+', crate)[0]
-                        crate_name = crate_name[0:len(crate_name)-1]
+                        crate_name = crate[:crate.rfind('-')]
                         crate_version = crate[len(crate_name)+1:]
                         if crate_name not in self.crates:
                             self.crates[crate_name] = crate_version
@@ -93,40 +92,42 @@ class ELFHandler:
         logging.info('Patching Cargo.toml files to produce shared libraries...')
         for crate_dir in os.listdir(session_dir):
             cargo_file_path = session_dir+'/'+crate_dir+'/'+'Cargo.toml'
-            new_cargo_file_lines = []
-            with open(cargo_file_path, 'r') as cargo_file:
-                cargo_file_lines = cargo_file.readlines()
-                found_lib = False
-                for line in cargo_file_lines:
-                    line = line.strip()
-                    if line == '[lib]':
-                        found_lib = True
-                        new_cargo_file_lines.append('[lib]\n')
+            if os.path.exists(cargo_file_path):
+                new_cargo_file_lines = []
+                with open(cargo_file_path, 'r') as cargo_file:
+                    cargo_file_lines = cargo_file.readlines()
+                    found_lib = False
+                    for line in cargo_file_lines:
+                        line = line.strip()
+                        if line == '[lib]':
+                            found_lib = True
+                            new_cargo_file_lines.append('[lib]\n')
+                            new_cargo_file_lines.append('crate-type = ["dylib"]\n')
+                        elif not line.startswith('crate-type'):
+                            new_cargo_file_lines.append(line+'\n')
+                    if not found_lib:
+                        new_cargo_file_lines.append('\n[lib]\n')
                         new_cargo_file_lines.append('crate-type = ["dylib"]\n')
-                    elif not line.startswith('crate-type'):
-                        new_cargo_file_lines.append(line+'\n')
-                if not found_lib:
-                    new_cargo_file_lines.append('\n[lib]\n')
-                    new_cargo_file_lines.append('crate-type = ["dylib"]\n')
-                cargo_file.close()
-            with open(cargo_file_path, 'w') as cargo_file:
-                cargo_file.writelines(new_cargo_file_lines)
-                cargo_file.close()
+                    cargo_file.close()
+                with open(cargo_file_path, 'w') as cargo_file:
+                    cargo_file.writelines(new_cargo_file_lines)
+                    cargo_file.close()
         logging.success('Done !')
         logging.info('Patching lib.rs files to prevent no_std errors...')
         for crate_dir in os.listdir(session_dir):
             lib_file_path = session_dir+'/'+crate_dir+'/'+'src/lib.rs'
-            new_lib_file_lines = []
-            with open(lib_file_path, 'r') as lib_file:
-                lib_file_lines = lib_file.readlines()
-                for line in lib_file_lines:
-                    line = line
-                    if 'no_std' not in line and 'as std;' not in line:
-                        new_lib_file_lines.append(line+'\n')
-                lib_file.close()
-            with open(lib_file_path, 'w') as lib_file:
-                lib_file.writelines(new_lib_file_lines)
-                lib_file.close()
+            if os.path.exists(lib_file_path):
+                new_lib_file_lines = []
+                with open(lib_file_path, 'r') as lib_file:
+                    lib_file_lines = lib_file.readlines()
+                    for line in lib_file_lines:
+                        line = line
+                        if 'no_std' not in line and 'as std;' not in line:
+                            new_lib_file_lines.append(line+'\n')
+                    lib_file.close()
+                with open(lib_file_path, 'w') as lib_file:
+                    lib_file.writelines(new_lib_file_lines)
+                    lib_file.close()
         logging.success('Done !')
         logging.info('Building crates...')
         try:
@@ -203,46 +204,47 @@ class ELFHandler:
             release_path = session_dir+'/'+crate_dir+'/target/release'
             if self.elf_arch == ELF.ARCH.i386:
                 release_path = session_dir+'/'+crate_dir+'/target/i686-unknown-linux-gnu/release'
-            for release_file_name in os.listdir(release_path):
-                if release_file_name.endswith(".so"):
-                    lib_elf = ELF.parse(release_path+'/'+release_file_name)
-                    with open(release_path+'/'+release_file_name, 'rb') as elf_file:
-                        elf_content = elf_file.read()
-                        elf_file.close()
-                    for func in lib_elf.functions:
-                        if func.size >= MIN_FUNC_SIZE:
-                            func_data = elf_content[func.address:func.address+func.size]
-                            md5_hash = hashlib.md5(func_data).digest()
-                            func_name = ''
-                            if func.name == None or len(func.name) == 0:
-                                crate_name = re.split('\d+', crate_dir)[0]
-                                crate_name = crate_name[0:len(crate_name)-1]
-                                func_name = crate_name+'_'+hex(func.address)[2:]
-                            else:
-                                func_name = self.demangle_name(func.name)
-                            if md5_hash in self.md5_hashes:
-                                self.matches[self.md5_hashes[md5_hash]] = func_name
-                            else:
-                                if func.size in self.part_hashes:
-                                    part_hash = self.gen_part_hash(func_data)
-                                    sized_part_hashes = self.part_hashes[func.size]
-                                    for func_address in sized_part_hashes:
-                                        if func_address in self.matches:
-                                            continue
-                                        target_part_hash = sized_part_hashes[func_address]
-                                        part_hash_score = self.compare_part_hashes(target_part_hash, part_hash)
-                                        if part_hash_score >= PART_HASH_TRUST:
-                                            if func_address not in self.part_matches:
-                                                self.part_matches[func_address] = [part_hash_score, func_name]
-                                            else:
-                                                max_score, _ = self.part_matches[func_address]
-                                                if part_hash_score > max_score:
+            if os.path.exists(release_path):
+                for release_file_name in os.listdir(release_path):
+                    if release_file_name.endswith(".so"):
+                        lib_elf = ELF.parse(release_path+'/'+release_file_name)
+                        with open(release_path+'/'+release_file_name, 'rb') as elf_file:
+                            elf_content = elf_file.read()
+                            elf_file.close()
+                        for func in lib_elf.functions:
+                            if func.size >= MIN_FUNC_SIZE:
+                                func_data = elf_content[func.address:func.address+func.size]
+                                md5_hash = hashlib.md5(func_data).digest()
+                                func_name = ''
+                                if func.name == None or len(func.name) == 0:
+                                    crate_name = re.split('\d+', crate_dir)[0]
+                                    crate_name = crate_name[0:len(crate_name)-1]
+                                    func_name = crate_name+'_'+hex(func.address)[2:]
+                                else:
+                                    func_name = self.demangle_name(func.name)
+                                if md5_hash in self.md5_hashes:
+                                    self.matches[self.md5_hashes[md5_hash]] = func_name
+                                else:
+                                    if func.size in self.part_hashes:
+                                        part_hash = self.gen_part_hash(func_data)
+                                        sized_part_hashes = self.part_hashes[func.size]
+                                        for func_address in sized_part_hashes:
+                                            if func_address in self.matches:
+                                                continue
+                                            target_part_hash = sized_part_hashes[func_address]
+                                            part_hash_score = self.compare_part_hashes(target_part_hash, part_hash)
+                                            if part_hash_score >= PART_HASH_TRUST:
+                                                if func_address not in self.part_matches:
                                                     self.part_matches[func_address] = [part_hash_score, func_name]
-                    for func_address in self.part_matches:
-                        if func_address in self.matches:
-                            continue
-                        _, func_name = self.part_matches[func_address]
-                        self.matches[func_address] = func_name
+                                                else:
+                                                    max_score, _ = self.part_matches[func_address]
+                                                    if part_hash_score > max_score:
+                                                        self.part_matches[func_address] = [part_hash_score, func_name]
+                        for func_address in self.part_matches:
+                            if func_address in self.matches:
+                                continue
+                            _, func_name = self.part_matches[func_address]
+                            self.matches[func_address] = func_name
         logging.success('Done ! '+str(len(self.matches))+' matches.')
 
     def patch_elf(self, out_path):
