@@ -42,6 +42,7 @@ Then the tool will hash (in various ways) the functions in your file and in the 
 
 ### Flags
 `help` -> Displays a help message.  
+`debug` -> Enable debug level of logging.  
 
 <a name="how_example"/>
 

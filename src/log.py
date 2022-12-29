@@ -26,6 +26,7 @@ class LogFormatter(logging.Formatter):
     }
     
     FORMAT_COLORS = {
+        logging.DEBUG: LOG_COLORS['BRIGHT_BLUE'],
         logging.SUCCESS: LOG_COLORS['GREEN'],
         logging.INFO: LOG_COLORS['CYAN'],
         logging.WARNING: LOG_COLORS['YELLOW'],
@@ -34,6 +35,7 @@ class LogFormatter(logging.Formatter):
     }
     
     FORMAT_PREFIXES = {
+        logging.DEBUG: '[-] ',
         logging.SUCCESS: '[+] ',
         logging.INFO: '[*] ',
         logging.WARNING: '[#] ',

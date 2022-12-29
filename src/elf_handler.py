@@ -10,20 +10,20 @@ import subprocess
 import hashlib
 from lief import ELF
 from log import LogFormatter
+from build_fixer import BuildFixer
 
 MIN_FUNC_SIZE = 10
 PART_HASH_LEN = 20
 PART_HASH_TRUST = 0.6
 
 class ELFHandler:
-
-    crates = {}
-    md5_hashes = {}
-    part_hashes = {}
-    part_matches = {}
-    matches = {}
     
     def __init__(self, elf_path):
+        self.crates = {}
+        self.md5_hashes = {}
+        self.part_hashes = {}
+        self.part_matches = {}
+        self.matches = {}
         if os.path.exists(elf_path):
             self.elf_path = elf_path
             self.elf = ELF.parse(elf_path)
@@ -36,6 +36,8 @@ class ELFHandler:
                     crate_matches = re.findall(b'/.cargo/(.+?)\.rs', elf_content)
                     crate_matches.extend(re.findall(b'/cargo/(.+?)\.rs', elf_content))
                     for crate_match in crate_matches:
+                        if b'\x00' in crate_match:
+                            crate_match = crate_match[:crate_match.find(b'\x00')]
                         crate = crate_match.split(b'/')[3].decode()
                         crate_name = crate[:crate.rfind('-')]
                         crate_version = crate[len(crate_name)+1:]
@@ -100,11 +102,11 @@ class ELFHandler:
                     found_lib = False
                     for line in cargo_file_lines:
                         line = line.strip()
-                        if line == '[lib]':
+                        if '[lib]' in line:
                             found_lib = True
                             new_cargo_file_lines.append('[lib]\n')
                             new_cargo_file_lines.append('crate-type = ["dylib"]\n')
-                        elif not line.startswith('crate-type'):
+                        elif not line.startswith('crate-type ') and not line.startswith('crate-type='):
                             new_cargo_file_lines.append(line+'\n')
                     if not found_lib:
                         new_cargo_file_lines.append('\n[lib]\n')
@@ -113,22 +115,8 @@ class ELFHandler:
                 with open(cargo_file_path, 'w') as cargo_file:
                     cargo_file.writelines(new_cargo_file_lines)
                     cargo_file.close()
-        logging.success('Done !')
-        logging.info('Patching lib.rs files to prevent no_std errors...')
-        for crate_dir in os.listdir(session_dir):
-            lib_file_path = session_dir+'/'+crate_dir+'/'+'src/lib.rs'
-            if os.path.exists(lib_file_path):
-                new_lib_file_lines = []
-                with open(lib_file_path, 'r') as lib_file:
-                    lib_file_lines = lib_file.readlines()
-                    for line in lib_file_lines:
-                        line = line
-                        if 'no_std' not in line and 'as std;' not in line:
-                            new_lib_file_lines.append(line+'\n')
-                    lib_file.close()
-                with open(lib_file_path, 'w') as lib_file:
-                    lib_file.writelines(new_lib_file_lines)
-                    lib_file.close()
+            else:
+                logging.debug(cargo_file_path + ' doesn\'t exist.')
         logging.success('Done !')
         logging.info('Building crates...')
         try:
@@ -144,15 +132,27 @@ class ELFHandler:
                     self.check_architecture_installation('i686-unknown-linux-gnu')
                 try:
                     build_output = subprocess.run(build_params, cwd=session_dir+'/'+crate_dir, capture_output=True)
-                except:
+                except Exception as e:
                     logging.error('An error occured when building crate \033[0;'+
                         str(LogFormatter.LOG_COLORS['WHITE'])+'m'+crate_dir)
+                    logging.debug(e)
+                    continue
                 build_err = build_output.stderr
                 if build_err is not None:
                     build_err = build_err.split(b'\n')
-                    if build_err[len(build_err)-2].startswith(b'error'):
+                    is_error = False
+                    for err_line in build_err:
+                        if err_line.decode().strip().startswith('error: '):
+                            is_error = True
+                    if is_error:
                         logging.error('An error occured when building crate \033[0;'+
                             str(LogFormatter.LOG_COLORS['WHITE'])+'m'+crate_dir)
+                        logging.debug('Here is the trace :')
+                        if logging.getLogger(__name__).getEffectiveLevel() <= logging.DEBUG:
+                            for err_line in build_err:
+                                print('\033[0;'+str(LogFormatter.FORMAT_COLORS[logging.DEBUG])+'m'+err_line.decode())
+                        logging.info('Delegating to BuildFixer...')
+                        BuildFixer(session_dir+'/'+crate_dir, build_err, self.elf_arch)
             logging.success('Done !')
             return True
         else:
@@ -246,6 +246,8 @@ class ELFHandler:
                                 continue
                             _, func_name = self.part_matches[func_address]
                             self.matches[func_address] = func_name
+            else:
+                logging.debug(release_path + ' doesn\'t exist.')
         logging.success('Done ! '+str(len(self.matches))+' matches.')
 
     def patch_elf(self, out_path):

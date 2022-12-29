@@ -11,15 +11,18 @@ TOOL_TITLE = "   ___         _       \n\
   / __|___ _ _| |__  ___ _ _ _  _ ___\n\
  | (__/ -_) '_| '_ \/ -_) '_| || (_-<\n\
   \___\___|_| |_.__/\___|_|  \_,_/__/\n"
-VERSION = '1.0'
+VERSION = '1.1'
 AUTHOR = 'h311d1n3r'
 
-def init_logging():
+def init_logging(debug_lvl):
     fmt = LogFormatter()
     hdlr = logging.StreamHandler(sys.stdout)
     hdlr.setFormatter(fmt)
     logging.root.addHandler(hdlr)
-    logging.root.setLevel(logging.DEBUG)
+    if debug_lvl:
+        logging.root.setLevel(logging.DEBUG)
+    else:
+        logging.root.setLevel(logging.INFO)
 
 def print_help_message():
     print('\033[0;'+str(LogFormatter.LOG_COLORS['CYAN'])+'m'+TOOL_TITLE)
@@ -36,6 +39,8 @@ def print_help_message():
     print('\033[0;'+str(LogFormatter.LOG_COLORS['CYAN'])+'m\nFlags:')
     print('\033[1;'+str(LogFormatter.LOG_COLORS['YELLOW'])+'m   help\033[0;'+str(LogFormatter.LOG_COLORS['CYAN'])+'m'+
         ' -> Displays this message.')
+    print('\033[1;'+str(LogFormatter.LOG_COLORS['YELLOW'])+'m   debug\033[0;'+str(LogFormatter.LOG_COLORS['CYAN'])+'m'+
+        ' -> Enable debug level of logging.')
 
 def manage_crates(elf_handler):
     if len(elf_handler.crates) > 0:
@@ -71,12 +76,13 @@ def manage_crates(elf_handler):
     return False
 
 if __name__ == '__main__':
-    init_logging()
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument('binary', nargs='?', type=str)
     parser.add_argument('-output', dest='out_file', type=str)
     parser.add_argument('--help', action='store_true')
+    parser.add_argument('--debug', action='store_true')
     args = parser.parse_args()
+    init_logging(args.debug)
     if args.help:
         print_help_message()
         sys.exit(0)
