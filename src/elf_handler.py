@@ -34,6 +34,7 @@ class ELFHandler:
                 with open(elf_path, 'rb') as elf_file:
                     elf_content = elf_file.read()
                     crate_matches = re.findall(b'/.cargo/(.+?)\.rs', elf_content)
+                    crate_matches.extend(re.findall(b'/cargo/(.+?)\.rs', elf_content))
                     for crate_match in crate_matches:
                         crate = crate_match.split(b'/')[3].decode()
                         crate_name = crate[:crate.rfind('-')]
