@@ -36,7 +36,7 @@ class ELFHandler:
                     crate_matches = re.findall(b'/.cargo/(.+?)(\.rs|\\x00)', elf_content)
                     crate_matches.extend(re.findall(b'/.cargo/(.+?)(\.rs|\\x00)', elf_content))
                     for crate_match in crate_matches:
-                        crate = crate_match.split(b'/')[3].decode()
+                        crate = crate_match[0].split(b'/')[3].decode()
                         crate_name = crate[:crate.rfind('-')]
                         crate_version = crate[len(crate_name)+1:]
                         if crate_name not in self.crates:
