@@ -28,7 +28,10 @@ class ELFHandler:
             self.elf_path = elf_path
             self.elf = ELF.parse(elf_path)
             if self.elf.has_section('.symtab') or self.elf.has_section('.strtab'):
-                logging.error('ELF file doesn\'t seem to be stripped.')
+                logging.error('ELF file doesn\'t seem to be stripped. Continuing execution may produce a corrupted ELF file.')
+                usr_run_unstripped = input('\033[0;'+str(LogFormatter.FORMAT_COLORS[logging.WARNING])+'m'+LogFormatter.FORMAT_PREFIXES[logging.WARNING]+'Continue anyway ? (y/N): ').strip()
+                if not usr_run_unstripped.lower().startswith('y'):
+                    sys.exit(1)
             self.elf_arch = self.elf.header.machine_type
             if self.elf_arch == ELF.ARCH.x86_64 or self.elf_arch == ELF.ARCH.i386:
                 with open(elf_path, 'rb') as elf_file:
