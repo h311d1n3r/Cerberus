@@ -86,7 +86,6 @@ class BuildFixer:
         build_params = ['cargo','build','--release']
         if self.elf_arch == ELF.ARCH.i386:
             build_params.append('--target=i686-unknown-linux-gnu')
-            self.check_architecture_installation('i686-unknown-linux-gnu')
         try:
             build_output = subprocess.run(build_params, cwd=self.crate_path, capture_output=True)
         except Exception as e:
