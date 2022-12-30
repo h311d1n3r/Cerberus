@@ -37,6 +37,18 @@ def std_redefinition_patch(crate_path):
             lib_file.writelines(new_lib_file_lines)
             lib_file.close()
 
+def add_workspace_patch(crate_path):
+    cargo_file_path = crate_path+'/Cargo.toml'
+    if os.path.exists(cargo_file_path):
+        cargo_file_lines = []
+        with open(cargo_file_path, 'r') as cargo_file:
+            cargo_file_lines = cargo_file.readlines()
+            cargo_file_lines.append('[workspace]\n')
+            cargo_file.close()
+        with open(cargo_file_path, 'w') as cargo_file:
+            cargo_file.writelines(cargo_file_lines)
+            cargo_file.close()
+
 class BuildFixer:
 
     PREFIX = '\033[1;'+str(LogFormatter.LOG_COLORS['BRIGHT_BLUE'])+'mBuildFixer'+'\033[0;'+\
@@ -45,10 +57,12 @@ class BuildFixer:
     TRACE_TO_PATCH = {
         'maybe a missing crate `core`?': ['EDITION 2021', newer_edition_patch],
         'the name `std` is defined multiple times': ['STD REDEFINITION', std_redefinition_patch],
-        'language item required, but not found: `eh_personality`': ['STD REDEFINITION', std_redefinition_patch]
+        'language item required, but not found: `eh_personality`': ['STD REDEFINITION', std_redefinition_patch],
+        'current package believes it\'s in a workspace when it\'s not': ['ADD WORKSPACE', add_workspace_patch]
     }
 
     def __init__(self, crate_path, build_err, elf_arch):
+        self.success = False
         self.applied_patches = {}
         self.crate_path = crate_path
         self.elf_arch = elf_arch
@@ -78,6 +92,7 @@ class BuildFixer:
         logging.info(self.PREFIX+'\033[0;'+str(LogFormatter.FORMAT_COLORS[logging.INFO])+'mBuilding crate again...')
         build_status, new_build_err = self.build_crate()
         if build_status:
+            self.success = True
             logging.success(self.PREFIX+'\033[0;'+str(LogFormatter.FORMAT_COLORS[logging.SUCCESS])+'mSuccess !')
         else:
             logging.info(self.PREFIX+'\033[0;'+str(LogFormatter.FORMAT_COLORS[logging.INFO])+'mTrying to patch new error trace...')

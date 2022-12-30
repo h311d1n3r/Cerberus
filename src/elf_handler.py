@@ -119,6 +119,7 @@ class ELFHandler:
                 logging.debug(cargo_file_path + ' doesn\'t exist.')
         logging.success('Done !')
         logging.info('Building crates...')
+        built_crates_ctr = 0
         try:
             version_output = subprocess.run(['cargo', '--version'], capture_output=True)
         except:
@@ -132,6 +133,7 @@ class ELFHandler:
                     self.check_architecture_installation('i686-unknown-linux-gnu')
                 try:
                     build_output = subprocess.run(build_params, cwd=session_dir+'/'+crate_dir, capture_output=True)
+                    built_crates_ctr += 1
                 except Exception as e:
                     logging.error('An error occured when building crate \033[0;'+
                         str(LogFormatter.LOG_COLORS['WHITE'])+'m'+crate_dir)
@@ -152,8 +154,10 @@ class ELFHandler:
                             for err_line in build_err:
                                 print('\033[0;'+str(LogFormatter.FORMAT_COLORS[logging.DEBUG])+'m'+err_line.decode())
                         logging.info('Delegating to BuildFixer...')
-                        BuildFixer(session_dir+'/'+crate_dir, build_err, self.elf_arch)
-            logging.success('Done !')
+                        build_fixer = BuildFixer(session_dir+'/'+crate_dir, build_err, self.elf_arch)
+                        if not build_fixer.success:
+                            built_crates_ctr -= 1
+            logging.success('Done ! ('+str(built_crates_ctr)+'/'+str(len(self.crates))+')')
             return True
         else:
             logging.fatal('Error when using cargo command !')
