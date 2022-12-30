@@ -74,6 +74,7 @@ class BuildFixer:
                             return
         if not found_patch:
             logging.error(self.PREFIX+'\033[0;'+str(LogFormatter.FORMAT_COLORS[logging.ERROR])+'mNo patch was found...')
+            return
         logging.info(self.PREFIX+'\033[0;'+str(LogFormatter.FORMAT_COLORS[logging.INFO])+'mBuilding crate again...')
         build_status, new_build_err = self.build_crate()
         if build_status:
