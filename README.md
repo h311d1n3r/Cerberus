@@ -37,6 +37,11 @@ Then the tool will hash (in various ways) the functions in your file and in the 
 
 ### Parameters
 `output` -> Specifies the path for the resulting ELF file.  
+`part_hash_len` -> Specifies the length of a `part hash`. The `part hash` of a function is just a reduction of the function with a linear pace.
+This technique is used to prevent fixed addresses from corrupting a standard hash. Default value : 20  
+`part_hash_trust` -> Specifies minimum ratio of similarity between the two hashed functions to compare. The kept function will be the one with the most matches anyway.
+Increasing this value will reduce the number of matched functions but speed up execution time. Default value : 0.6  
+`min_func_size` -> The minimum length a function must be to get analyzed. Decreasing this value will increase matches but also false positives. Default value : 10  
 
 <a name="how_flags"/>
 

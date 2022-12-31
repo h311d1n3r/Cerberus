@@ -8,13 +8,10 @@ import shutil
 import tarfile
 import subprocess
 import hashlib
+import params
 from lief import ELF
 from log import LogFormatter
 from build_fixer import BuildFixer
-
-MIN_FUNC_SIZE = 10
-PART_HASH_LEN = 20
-PART_HASH_TRUST = 0.6
 
 class ELFHandler:
     
@@ -167,7 +164,7 @@ class ELFHandler:
         return False
 
     def gen_part_hash(self, data):
-        part_hash_pace = len(data) // PART_HASH_LEN
+        part_hash_pace = len(data) // params.PART_HASH_LEN
         if part_hash_pace < 1:
             part_hash_pace = 1
         part_hash = []
@@ -190,7 +187,7 @@ class ELFHandler:
             elf_content = elf_file.read()
             elf_file.close()
         for func in self.elf.functions:
-            if func.size >= MIN_FUNC_SIZE:
+            if func.size >= params.MIN_FUNC_SIZE:
                 func_data = elf_content[func.address:func.address+func.size]
                 md5_hash = hashlib.md5(func_data).digest()
                 self.md5_hashes[md5_hash] = func.address
@@ -220,7 +217,7 @@ class ELFHandler:
                             elf_content = elf_file.read()
                             elf_file.close()
                         for func in lib_elf.functions:
-                            if func.size >= MIN_FUNC_SIZE:
+                            if func.size >= params.MIN_FUNC_SIZE:
                                 func_data = elf_content[func.address:func.address+func.size]
                                 md5_hash = hashlib.md5(func_data).digest()
                                 func_name = ''
@@ -241,7 +238,7 @@ class ELFHandler:
                                                 continue
                                             target_part_hash = sized_part_hashes[func_address]
                                             part_hash_score = self.compare_part_hashes(target_part_hash, part_hash)
-                                            if part_hash_score >= PART_HASH_TRUST:
+                                            if part_hash_score >= params.PART_HASH_TRUST:
                                                 if func_address not in self.part_matches:
                                                     self.part_matches[func_address] = [part_hash_score, func_name]
                                                 else:
@@ -257,7 +254,7 @@ class ELFHandler:
                 logging.debug(release_path + ' doesn\'t exist.')
         logging.success('Done ! '+str(len(self.matches))+' matches.')
 
-    def patch_elf(self, out_path):
+    def patch_elf(self):
         logging.info('Patching to new ELF...')
         symtab_section             = ELF.Section()
         symtab_section.name        = ".symtab"
@@ -296,5 +293,5 @@ class ELFHandler:
             symbol.shndx   = 14
             symbol         = self.elf.add_static_symbol(symbol)
         
-        self.elf.write(out_path)
+        self.elf.write(params.OUTPUT)
         logging.success('Done !')

@@ -3,6 +3,7 @@ import os
 import sys
 import shutil
 import argparse
+import params
 from uuid import uuid4
 from elf_handler import ELFHandler
 from log import LogFormatter
@@ -14,12 +15,12 @@ TOOL_TITLE = "   ___         _       \n\
 VERSION = '1.1'
 AUTHOR = 'h311d1n3r'
 
-def init_logging(debug_lvl):
+def init_logging():
     fmt = LogFormatter()
     hdlr = logging.StreamHandler(sys.stdout)
     hdlr.setFormatter(fmt)
     logging.root.addHandler(hdlr)
-    if debug_lvl:
+    if params.DEBUG:
         logging.root.setLevel(logging.DEBUG)
     else:
         logging.root.setLevel(logging.INFO)
@@ -78,18 +79,28 @@ def manage_crates(elf_handler):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument('binary', nargs='?', type=str)
-    parser.add_argument('-output', dest='out_file', type=str)
+    parser.add_argument('-output', dest='output', type=str)
+    parser.add_argument('-part_hash_trust', dest='part_hash_trust', type=float)
+    parser.add_argument('-part_hash_len', dest='part_hash_len', type=int)
+    parser.add_argument('-min_func_size', dest='min_func_size', type=int)
     parser.add_argument('--help', action='store_true')
     parser.add_argument('--debug', action='store_true')
     args = parser.parse_args()
-    init_logging(args.debug)
+    params.DEBUG = args.debug
+    init_logging()
+    if args.part_hash_trust:
+        params.PART_HASH_TRUST = args.part_hash_trust
+    if args.part_hash_len:
+        params.PART_HASH_LEN = args.part_hash_len
+    if args.min_func_size:
+        params.MIN_FUNC_SIZE = args.min_func_size
     if args.help:
         print_help_message()
         sys.exit(0)
     if args.binary:
-        out_file = args.binary+'-patched'
-        if args.out_file:
-            out_file = args.out_file
+        params.OUTPUT = args.binary+'-patched'
+        if args.output:
+            params.OUTPUT = args.output
         elf_handler = ELFHandler(args.binary)
         if manage_crates(elf_handler):
             session_dir = '.cerberus-' + uuid4().hex
@@ -99,9 +110,9 @@ if __name__ == '__main__':
             if elf_handler.download_and_build_crates(session_dir):
                 elf_handler.gen_hashes(session_dir)
                 elf_handler.compare_hashes(session_dir)
-                elf_handler.patch_elf(out_file)
+                elf_handler.patch_elf()
                 logging.success('End of execution. ELF file \033[0;'+str(LogFormatter.LOG_COLORS['WHITE'])+'m'+
-                    out_file+'\033[0;'+str(LogFormatter.FORMAT_COLORS[logging.SUCCESS])+'m is your result.')
+                    params.OUTPUT+'\033[0;'+str(LogFormatter.FORMAT_COLORS[logging.SUCCESS])+'m is your result.')
             shutil.rmtree(session_dir)
     else:
         print_help_message()
