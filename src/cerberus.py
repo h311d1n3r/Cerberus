@@ -36,7 +36,16 @@ def print_help_message():
         str(LogFormatter.LOG_COLORS['YELLOW'])+'mcerberus binary [-param value] [--flag]\n')
     print('\033[0;'+str(LogFormatter.LOG_COLORS['CYAN'])+'mParameters:')
     print('\033[1;'+str(LogFormatter.LOG_COLORS['YELLOW'])+'m   output\033[0;'+str(LogFormatter.LOG_COLORS['CYAN'])+'m'+
-        ' -> Specifies the path for the resulting ELF file.')
+        ' -> Specifies the path for the resulting ELF file. \033[1;'+str(LogFormatter.LOG_COLORS['CYAN'])+'m'+'Default value : [input_binary]-patched')
+    print('\033[1;'+str(LogFormatter.LOG_COLORS['YELLOW'])+'m   part_hash_len\033[0;'+str(LogFormatter.LOG_COLORS['CYAN'])+'m'+
+' -> Specifies the length of a part hash. The part hash of a function is just a reduction of the function with a linear pace.\
+ This technique is used to prevent fixed addresses from corrupting a standard hash. \033[1;'+str(LogFormatter.LOG_COLORS['CYAN'])+'m'+'Default value : 20')
+    print('\033[1;'+str(LogFormatter.LOG_COLORS['YELLOW'])+'m   part_hash_trust\033[0;'+str(LogFormatter.LOG_COLORS['CYAN'])+'m'+
+' -> Specifies minimum ratio of similarity between the two hashed functions to compare. The kept function will be the one with the most matches anyway.\
+ Increasing this value will reduce the number of matched functions but speed up execution time. \033[1;'+str(LogFormatter.LOG_COLORS['CYAN'])+'m'+'Default value : 0.6')
+    print('\033[1;'+str(LogFormatter.LOG_COLORS['YELLOW'])+'m   min_func_size\033[0;'+str(LogFormatter.LOG_COLORS['CYAN'])+'m'+
+        ' -> Specifies the minimum length a function must be to get analyzed. Decreasing this value will increase matches but also false positives. \033[1;'+
+        str(LogFormatter.LOG_COLORS['CYAN'])+'m'+'Default value : 10')
     print('\033[0;'+str(LogFormatter.LOG_COLORS['CYAN'])+'m\nFlags:')
     print('\033[1;'+str(LogFormatter.LOG_COLORS['YELLOW'])+'m   help\033[0;'+str(LogFormatter.LOG_COLORS['CYAN'])+'m'+
         ' -> Displays this message.')
