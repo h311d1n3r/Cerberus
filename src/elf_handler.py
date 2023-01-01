@@ -24,7 +24,9 @@ class ELFHandler:
         if os.path.exists(elf_path):
             self.elf_path = elf_path
             self.elf = ELF.parse(elf_path)
+            self.is_stripped = True
             if self.elf.has_section('.symtab') or self.elf.has_section('.strtab'):
+                self.is_stripped = False
                 logging.error('ELF file doesn\'t seem to be stripped. Continuing execution may produce a corrupted ELF file.')
                 usr_run_unstripped = input('\033[0;'+str(LogFormatter.FORMAT_COLORS[logging.WARNING])+'m'+LogFormatter.FORMAT_PREFIXES[logging.WARNING]+'Continue anyway ? (y/N): ').strip()
                 if not usr_run_unstripped.lower().startswith('y'):
@@ -256,42 +258,54 @@ class ELFHandler:
 
     def patch_elf(self):
         logging.info('Patching to new ELF...')
-        symtab_section             = ELF.Section()
-        symtab_section.name        = ".symtab"
-        symtab_section.type        = ELF.SECTION_TYPES.SYMTAB
-        symtab_section.entry_size  = 0x18
-        symtab_section.alignment   = 8
-        symtab_section.link        = len(self.elf.sections) + 1
-        symtab_section.content     = [0] * 100
+        if not self.elf.has_section('.symtab'):
+            symtab_section             = ELF.Section()
+            symtab_section.name        = ".symtab"
+            symtab_section.type        = ELF.SECTION_TYPES.SYMTAB
+            symtab_section.entry_size  = 0x18
+            symtab_section.alignment   = 8
+            symtab_section.link        = len(self.elf.sections) + 1
+            symtab_section.content     = [0] * 100
+            symtab_section = self.elf.add(symtab_section, loaded=False)
+        else:
+            symtab_section = self.elf.get_section('.symtab')
+            
+        if not self.elf.has_section('.strtab'):
+            symstr_section            = ELF.Section()
+            symstr_section.name       = ".strtab"
+            symstr_section.type       = ELF.SECTION_TYPES.STRTAB
+            symstr_section.entry_size = 1
+            symstr_section.alignment  = 1
+            symstr_section.content    = [0] * 100
+            symstr_section = self.elf.add(symstr_section, loaded=False)
+        else:
+            symstr_section = self.elf.get_section('.strtab')
 
-        symstr_section            = ELF.Section()
-        symstr_section.name       = ".strtab"
-        symstr_section.type       = ELF.SECTION_TYPES.STRTAB
-        symstr_section.entry_size = 1
-        symstr_section.alignment  = 1
-        symstr_section.content    = [0] * 100
-        
-        symtab_section = self.elf.add(symtab_section, loaded=False)
-        symstr_section = self.elf.add(symstr_section, loaded=False)
-        
-        symbol         = ELF.Symbol()
-        symbol.name    = ""
-        symbol.type    = ELF.SYMBOL_TYPES.NOTYPE
-        symbol.value   = 0
-        symbol.binding = ELF.SYMBOL_BINDINGS.LOCAL
-        symbol.size    = 0
-        symbol.shndx   = 0
-        symbol         = self.elf.add_static_symbol(symbol)
+        sym_addresses = []
+        if self.is_stripped:
+            symbol         = ELF.Symbol()
+            symbol.name    = ""
+            symbol.type    = ELF.SYMBOL_TYPES.NOTYPE
+            symbol.value   = 0
+            symbol.binding = ELF.SYMBOL_BINDINGS.LOCAL
+            symbol.size    = 0
+            symbol.shndx   = 0
+            symbol         = self.elf.add_static_symbol(symbol)
+        else:
+            for sym in self.elf.symbols:
+                if sym.value not in sym_addresses:
+                    sym_addresses.append(sym.value)
         
         for match_addr in self.matches:
-            match_name = self.matches[match_addr]
-            symbol         = ELF.Symbol()
-            symbol.name    = match_name
-            symbol.type    = ELF.SYMBOL_TYPES.FUNC
-            symbol.value   = match_addr
-            symbol.binding = ELF.SYMBOL_BINDINGS.LOCAL
-            symbol.shndx   = 14
-            symbol         = self.elf.add_static_symbol(symbol)
+            if self.is_stripped or match_addr not in sym_addresses:
+                match_name = self.matches[match_addr]
+                symbol         = ELF.Symbol()
+                symbol.name    = match_name
+                symbol.type    = ELF.SYMBOL_TYPES.FUNC
+                symbol.value   = match_addr
+                symbol.binding = ELF.SYMBOL_BINDINGS.LOCAL
+                symbol.shndx   = 14
+                symbol         = self.elf.add_static_symbol(symbol)
         
         self.elf.write(params.OUTPUT)
         logging.success('Done !')
