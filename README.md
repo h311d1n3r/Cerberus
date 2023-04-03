@@ -19,8 +19,8 @@ Then the tool will hash (in various ways) the functions in your file and in the 
 
 ## Build the tool  
 1. You need to have **Python3**, **Cargo** and the **binutils** package installed on your system.  
-2. Install **pyinstaller** and **lief** using `pip3 install package_name`.  
-3. Clone the repository.  
+2. Clone the repository.  
+3. Install Python dependencies using `pip3 install -r requirements.txt`.  
 4. Build the tool using `pyinstaller src/cerberus.py src/*.py --onefile --clean`.  
 5. Add the generated `dist` directory to your path using `PATH=$PATH:~/path/to/the/repo/dist`.  
 

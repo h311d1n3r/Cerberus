@@ -1,0 +1,2 @@
+lief>=0.12.3
+pyinstaller>=5.9.0
