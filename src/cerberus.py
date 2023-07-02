@@ -4,15 +4,16 @@ import sys
 import shutil
 import argparse
 import params
+import importlib
 from uuid import uuid4
-from elf_handler import ELFHandler
 from log import LogFormatter
+from langs.lang_manager import LangIdentifier, LANG
 
 TOOL_TITLE = "   ___         _       \n\
   / __|___ _ _| |__  ___ _ _ _  _ ___\n\
  | (__/ -_) '_| '_ \/ -_) '_| || (_-<\n\
   \___\___|_| |_.__/\___|_|  \_,_/__/\n"
-VERSION = '1.1'
+VERSION = '1.2'
 AUTHOR = 'h311d1n3r'
 
 def init_logging():
@@ -24,6 +25,30 @@ def init_logging():
         logging.root.setLevel(logging.DEBUG)
     else:
         logging.root.setLevel(logging.INFO)
+
+def select_lang():
+    logging.info('Language identification...')
+    identifier = LangIdentifier(args.binary)
+    langs = identifier.identify()
+    if len(langs) >= 2:
+        logging.warning(str(len(langs))+' languages were identified.')
+        for lang in langs:
+            logging.success('- \033[1;'+str(LogFormatter.LOG_COLORS['BRIGHT_GREEN'])+'m'+lang.value+'\033[0;'+str(LogFormatter.LOG_COLORS['BRIGHT_GREEN'])+'m: '+str(langs[lang])+' matches.')
+        lang_name = input('\033[0;'+str(LogFormatter.FORMAT_COLORS[logging.WARNING])+'m'+'Select one in the list above or type "all" to show other supported languages : \033[0;'+str(LogFormatter.LOG_COLORS['WHITE'])+'m')
+        if lang_name.lower() != 'all':
+            return identifier.lang_from_name(lang_name)
+    elif len(langs) == 1:
+        lang = next(iter(langs))
+        logging.success('Language identified : \033[1;'+str(LogFormatter.LOG_COLORS['BRIGHT_GREEN'])+'m'+lang.value)
+        use_found_lang = input('\033[0;'+str(LogFormatter.FORMAT_COLORS[logging.INFO])+'mStart analysis with this language ? (Y/n): \033[0;'+str(LogFormatter.LOG_COLORS['WHITE'])+'m')
+        if not use_found_lang.lower().startswith('n'):
+            return lang
+    else:
+        logging.warning('No language was identified.')
+    for lang in LANG:
+        logging.success('- \033[1;'+str(LogFormatter.LOG_COLORS['BRIGHT_GREEN'])+'m'+lang.value)
+    lang_name = input('\033[0;'+str(LogFormatter.FORMAT_COLORS[logging.INFO])+'m'+'Select language to start analysis with : \033[0;'+str(LogFormatter.LOG_COLORS['WHITE'])+'m')
+    return identifier.lang_from_name(lang_name)
 
 def print_help_message():
     print('\033[0;'+str(LogFormatter.LOG_COLORS['CYAN'])+'m'+TOOL_TITLE)
@@ -52,36 +77,34 @@ def print_help_message():
     print('\033[1;'+str(LogFormatter.LOG_COLORS['YELLOW'])+'m   debug\033[0;'+str(LogFormatter.LOG_COLORS['CYAN'])+'m'+
         ' -> Enable debug level of logging.')
 
-def manage_crates(elf_handler):
-    if len(elf_handler.crates) > 0:
-            logging.info('The following crates were found :')
-            for crate_name in elf_handler.crates:
-                crate_version = elf_handler.crates[crate_name]
-                logging.success('- '+crate_name+': '+'\033[0;'+str(LogFormatter.LOG_COLORS['BRIGHT_GREEN'])+'m'+
-                    'v'+crate_version)
+def manage_libs(elf_handler):
+    if len(elf_handler.libs) > 0:
+            logging.info('The following libraries were found :')
+            for lib_name in elf_handler.libs:
+                lib_version = elf_handler.libs[lib_name]
+                logging.success('- \033[1;'+str(LogFormatter.LOG_COLORS['BRIGHT_GREEN'])+'m'+lib_name+'\033[0;'+str(LogFormatter.LOG_COLORS['BRIGHT_GREEN'])+'m: v'+lib_version)
     else:
-        logging.warning('No crate was found in specified ELF file')
+        logging.warning('No library was found in specified ELF file')
     while True:
-        usr_more_crates = input('\033[0;'+str(LogFormatter.FORMAT_COLORS[logging.INFO])+'m'+
-            LogFormatter.FORMAT_PREFIXES[logging.INFO]+'Add/Edit/Remove crate ? (y/N): ').strip()
-        if not usr_more_crates.lower().startswith('y'):
+        usr_more_libs = input('\033[0;'+str(LogFormatter.FORMAT_COLORS[logging.INFO])+'m'+
+            LogFormatter.FORMAT_PREFIXES[logging.INFO]+'Add/Edit/Remove libraries ? (y/N): \033[0;'+str(LogFormatter.LOG_COLORS['WHITE'])+'m').strip()
+        if not usr_more_libs.lower().startswith('y'):
             break
-        usr_crate_name = input('\033[0;'+str(LogFormatter.FORMAT_COLORS[logging.INFO])+'m'+
-            LogFormatter.FORMAT_PREFIXES[logging.INFO]+'Crate name: ').strip()
-        usr_crate_version = input('\033[0;'+str(LogFormatter.FORMAT_COLORS[logging.INFO])+'m'+
-            LogFormatter.FORMAT_PREFIXES[logging.INFO]+'Crate version (blank to remove): ').strip()
-        if usr_crate_name in elf_handler.crates and len(usr_crate_version) == 0:
-            del elf_handler.crates[usr_crate_name]
+        usr_lib_name = input('\033[0;'+str(LogFormatter.FORMAT_COLORS[logging.INFO])+'m'+
+            LogFormatter.FORMAT_PREFIXES[logging.INFO]+'Library name: \033[0;'+str(LogFormatter.LOG_COLORS['WHITE'])+'m').strip()
+        usr_lib_version = input('\033[0;'+str(LogFormatter.FORMAT_COLORS[logging.INFO])+'m'+
+            LogFormatter.FORMAT_PREFIXES[logging.INFO]+'Library version (blank to remove): \033[0;'+str(LogFormatter.LOG_COLORS['WHITE'])+'m').strip()
+        if usr_lib_name in elf_handler.libs and len(usr_lib_version) == 0:
+            del elf_handler.libs[usr_lib_name]
         else:
-            if usr_crate_version.startswith('v'):
-                usr_crate_version = usr_crate_version[1:]
-            elf_handler.crates[usr_crate_name] = usr_crate_version
-        logging.info('Current crates list :')
-        for crate_name in elf_handler.crates:
-            crate_version = elf_handler.crates[crate_name]
-            logging.success('- '+crate_name+': \033[0;'+str(LogFormatter.LOG_COLORS['BRIGHT_GREEN'])+'m'+
-                'v'+crate_version)
-    if len(elf_handler.crates) >= 1:
+            if usr_lib_version.startswith('v'):
+                usr_lib_version = usr_lib_version[1:]
+            elf_handler.libs[usr_lib_name] = usr_lib_version
+        logging.info('Current libraries list :')
+        for lib_name in elf_handler.libs:
+            lib_version = elf_handler.libs[lib_name]
+            logging.success('- \033[1;'+str(LogFormatter.LOG_COLORS['BRIGHT_GREEN'])+'m'+lib_name+'\033[0;'+str(LogFormatter.LOG_COLORS['BRIGHT_GREEN'])+'m: v'+lib_version)
+    if len(elf_handler.libs) >= 1:
         return True
     return False
 
@@ -110,13 +133,19 @@ if __name__ == '__main__':
         params.OUTPUT = args.binary+'-patched'
         if args.output:
             params.OUTPUT = args.output
-        elf_handler = ELFHandler(args.binary)
-        if manage_crates(elf_handler):
+        lang = select_lang()
+        if lang is None:
+            logging.error('This language does not exist or is not supported at the moment...')
+            sys.exit(0)
+        logging.info('Language chosen for analysis : \033[1;' + str(LogFormatter.LOG_COLORS['MAGENTA']) + 'm' + lang.value);
+        handler_module = importlib.import_module('langs.'+lang.value+'.elf_handler')
+        elf_handler = handler_module.ELFHandler(args.binary)
+        if manage_libs(elf_handler):
             session_dir = '.cerberus-' + uuid4().hex
             while os.path.exists(session_dir):
                 session_dir = '.cerberus-' + uuid4().hex
             os.mkdir(session_dir)
-            if elf_handler.download_and_build_crates(session_dir):
+            if elf_handler.download_and_build_libs(session_dir):
                 elf_handler.gen_hashes(session_dir)
                 elf_handler.compare_hashes(session_dir)
                 elf_handler.patch_elf()
