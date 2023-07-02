@@ -49,7 +49,7 @@ jobs:
         do
           echo "Starting Rust test n°$i"
           cd test/Rust/test_$i/target/i686-unknown-linux-gnu/release
-          echo 'y' | echo 'N' | cerberus ./test_$i -output ./test_$i-syms
+          echo 'y' ; echo 'N' | cerberus ./test_$i -output ./test_$i-syms
           result=$(nm test_$i-syms)
           cd ../../..
           expected_result=$(cat 'result.txt')
@@ -74,7 +74,7 @@ jobs:
         do
           echo "Starting Rust test n°$i"
           cd test/Rust/test_$i/target/release
-          echo 'y' | echo 'N' | cerberus ./test_$i -output ./test_$i-syms
+          echo 'y' ; echo 'N' | cerberus ./test_$i -output ./test_$i-syms
           result=$(nm test_$i-syms)
           cd ../..
           expected_result=$(cat 'result.txt')
