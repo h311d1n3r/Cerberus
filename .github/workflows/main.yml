@@ -29,27 +29,27 @@ jobs:
       run: pyinstaller src/cerberus.py src/*.py --onefile --clean
     - name: append_path
       run: echo "`pwd`/dist" >> $GITHUB_PATH
-    - name: compile_tests
+    - name: compile_rust_tests
       run: |
-        echo "Installing 32-bit architecture"
+        echo "Installing Rust 32-bit architecture"
         rustup target install i686-unknown-linux-gnu
-        echo "Compiling tests"
-        for i in $(seq 1 1 `ls ./test | wc -l`)
+        echo "Compiling Rust tests"
+        for i in $(seq 1 1 `ls ./test/Rust | wc -l`)
         do
-          echo "Compiling test n°$i"
-          cd test/test_$i
+          echo "Compiling Rust test n°$i"
+          cd test/Rust/test_$i
           cargo build --release
           cargo build --release --target=i686-unknown-linux-gnu
-          cd ../..
+          cd ../../..
         done
-    - name: run_tests_32
+    - name: run_rust_tests_32
       run: |
-        echo "Running 32bit tests"
-        for i in $(seq 1 1 `ls ./test | wc -l`)
+        echo "Running Rust 32bit tests"
+        for i in $(seq 1 1 `ls ./test/Rust | wc -l`)
         do
-          echo "Starting test n°$i"
-          cd test/test_$i/target/i686-unknown-linux-gnu/release
-          echo 'N' | cerberus ./test_$i -output ./test_$i-syms
+          echo "Starting Rust test n°$i"
+          cd test/Rust/test_$i/target/i686-unknown-linux-gnu/release
+          echo 'y' | echo 'N' | cerberus ./test_$i -output ./test_$i-syms
           result=$(nm test_$i-syms)
           cd ../../..
           expected_result=$(cat 'result.txt')
@@ -65,16 +65,16 @@ jobs:
             fi
           done
           echo "Success !"
-          cd ../../
+          cd ../../../
         done
-    - name: run_tests_64
+    - name: run_rust_tests_64
       run: |
-        echo "Running 64bit tests"
-        for i in $(seq 1 1 `ls ./test | wc -l`)
+        echo "Running Rust 64bit tests"
+        for i in $(seq 1 1 `ls ./test/Rust | wc -l`)
         do
-          echo "Starting test n°$i"
-          cd test/test_$i/target/release
-          echo 'N' | cerberus ./test_$i -output ./test_$i-syms
+          echo "Starting Rust test n°$i"
+          cd test/Rust/test_$i/target/release
+          echo 'y' | echo 'N' | cerberus ./test_$i -output ./test_$i-syms
           result=$(nm test_$i-syms)
           cd ../..
           expected_result=$(cat 'result.txt')
@@ -90,5 +90,5 @@ jobs:
             fi
           done
           echo "Success !"
-          cd ../../
+          cd ../../../
         done
