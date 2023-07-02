@@ -26,7 +26,7 @@ jobs:
     - name: python_dependencies
       run: pip3 install pyinstaller lief
     - name: compile
-      run: build.sh
+      run: ./build.sh
     - name: append_path
       run: echo "`pwd`/dist" >> $GITHUB_PATH
     - name: compile_rust_tests
