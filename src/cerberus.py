@@ -30,6 +30,8 @@ def select_lang():
     logging.info('Language identification...')
     identifier = LangIdentifier(args.binary)
     langs = identifier.identify()
+    if params.NO_PROMPT:
+        return next(iter(langs))
     if len(langs) >= 2:
         logging.warning(str(len(langs))+' languages were identified.')
         for lang in langs:
@@ -85,7 +87,7 @@ def manage_libs(elf_handler):
                 logging.success('- \033[1;'+str(LogFormatter.LOG_COLORS['BRIGHT_GREEN'])+'m'+lib_name+'\033[0;'+str(LogFormatter.LOG_COLORS['BRIGHT_GREEN'])+'m: v'+lib_version)
     else:
         logging.warning('No library was found in specified ELF file')
-    while True:
+    while True and not params.NO_PROMPT:
         usr_more_libs = input('\033[0;'+str(LogFormatter.FORMAT_COLORS[logging.INFO])+'m'+
             LogFormatter.FORMAT_PREFIXES[logging.INFO]+'Add/Edit/Remove libraries ? (y/N): \033[0;'+str(LogFormatter.LOG_COLORS['WHITE'])+'m').strip()
         if not usr_more_libs.lower().startswith('y'):
@@ -117,8 +119,10 @@ if __name__ == '__main__':
     parser.add_argument('-min_func_size', dest='min_func_size', type=int)
     parser.add_argument('--help', action='store_true')
     parser.add_argument('--debug', action='store_true')
+    parser.add_argument('--no-prompt', action='store_true')
     args = parser.parse_args()
     params.DEBUG = args.debug
+    params.NO_PROMPT = args.no_prompt
     init_logging()
     if args.part_hash_trust:
         params.PART_HASH_TRUST = args.part_hash_trust
