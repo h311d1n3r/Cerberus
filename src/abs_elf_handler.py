@@ -5,9 +5,11 @@ import hashlib
 import params
 import re
 import subprocess
+import copy
 from lief import ELF
 from log import LogFormatter
 from abc import ABC, abstractmethod
+from shutil import which
 
 class AbstractELFHandler(ABC):
     
@@ -17,9 +19,15 @@ class AbstractELFHandler(ABC):
         self.part_hashes = {}
         self.part_matches = {}
         self.matches = {}
+        self.funcs = []
         if os.path.exists(elf_path):
             self.elf_path = elf_path
             self.elf = ELF.parse(elf_path)
+            self.funcs = copy.deepcopy(self.elf.functions)
+            if len(self.funcs) == 0:
+                if not self.request_radare2_analysis():
+                    logging.error('radare2 analysis failed...')
+                    sys.exit(1)
             self.is_stripped = True
             if self.elf.has_section('.symtab') or self.elf.has_section('.strtab'):
                 self.is_stripped = False
@@ -46,6 +54,30 @@ class AbstractELFHandler(ABC):
     def download_and_build_libs(self, session_dir):
         pass
 
+    def request_radare2_analysis(self):
+        if which('radare2') is None:
+            logging.warning('In-depth analysis with \033[1;'+str(LogFormatter.FORMAT_COLORS[logging.INFO])+'mradare2\033[0;'+str(LogFormatter.FORMAT_COLORS[logging.INFO])+'m is required for this program. Please install it and run again.')
+            return False
+        logging.info('In-depth analysis with \033[1;'+str(LogFormatter.FORMAT_COLORS[logging.INFO])+'mradare2\033[0;'+str(LogFormatter.FORMAT_COLORS[logging.INFO])+'m...')
+        r2_proc = subprocess.Popen(['radare2', '-q', '-c', 'aaa', '-c', 'afl', self.elf_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        r2_proc.wait()
+        r2_out, r2_err = r2_proc.communicate()
+        Func = type('Func', (), {'address': 0, 'size': 0, 'name': None})
+        for line in r2_out.decode().split('\n'):
+            if line[0:2] != '0x':
+                continue
+            vals = line.split(' ')
+            vals = [s for s in vals if s != '']
+            fun_start = int(vals[0], 16)
+            fun_sz = int(vals[2], 10)
+            func = Func()
+            func.address = fun_start - self.elf.imagebase
+            func.size = fun_sz
+            self.funcs.append(func)
+        if len(self.funcs) == 0:
+            return False
+        return True
+
     def gen_part_hash(self, data):
         part_hash_pace = len(data) // params.PART_HASH_LEN
         if part_hash_pace < 1:
@@ -69,7 +101,7 @@ class AbstractELFHandler(ABC):
         with open(self.elf_path, 'rb') as elf_file:
             elf_content = elf_file.read()
             elf_file.close()
-        for func in self.elf.functions:
+        for func in self.funcs:
             if func.size >= params.MIN_FUNC_SIZE:
                 func_data = elf_content[func.address:func.address+func.size]
                 md5_hash = hashlib.md5(func_data).digest()
@@ -103,7 +135,7 @@ class AbstractELFHandler(ABC):
                             elf_file.close()
                         for func in lib_elf.functions:
                             if func.size >= params.MIN_FUNC_SIZE:
-                                func_data = elf_content[func.address:func.address+func.size]
+                                func_data = elf_content[func.address-lib_elf.imagebase:func.address-lib_elf.imagebase+func.size]
                                 md5_hash = hashlib.md5(func_data).digest()
                                 func_name = ''
                                 if func.name == None or len(func.name) == 0:
@@ -119,9 +151,10 @@ class AbstractELFHandler(ABC):
                                         part_hash = self.gen_part_hash(func_data)
                                         sized_part_hashes = self.part_hashes[func.size]
                                         for func_address in sized_part_hashes:
+                                            func_address += self.elf.imagebase
                                             if func_address in self.matches:
                                                 continue
-                                            target_part_hash = sized_part_hashes[func_address]
+                                            target_part_hash = sized_part_hashes[func_address - self.elf.imagebase]
                                             part_hash_score = self.compare_part_hashes(target_part_hash, part_hash)
                                             if part_hash_score >= params.PART_HASH_TRUST:
                                                 if func_address not in self.part_matches:

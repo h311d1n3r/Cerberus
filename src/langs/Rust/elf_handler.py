@@ -29,6 +29,7 @@ class ELFHandler(AbstractELFHandler):
                 crate_version = crate[len(crate_name)+1:]
                 if crate_name not in self.libs:
                     self.libs[crate_name] = crate_version
+            self.libs = dict(sorted(self.libs.items()))
         elf_file.close()
         
     def check_architecture_installation(self, architecture):

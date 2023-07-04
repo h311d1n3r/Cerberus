@@ -105,7 +105,7 @@ def manage_libs(elf_handler):
         logging.info('Current libraries list :')
         for lib_name in elf_handler.libs:
             lib_version = elf_handler.libs[lib_name]
-            logging.success('- \033[1;'+str(LogFormatter.LOG_COLORS['BRIGHT_GREEN'])+'m'+lib_name+'\033[0;'+str(LogFormatter.LOG_COLORS['BRIGHT_GREEN'])+'m: v'+lib_version)
+            logging.success('- \033[1;'+str(LogFormatter.LOG_COLORS['BRIGHT_GREEN'])+'m'+lib_name+'\033[0;'+str(LogFormatter.LOG_COLORS['BRIGHT_GREEN'])+'m: v' + lib_version)
     if len(elf_handler.libs) >= 1:
         return True
     return False
