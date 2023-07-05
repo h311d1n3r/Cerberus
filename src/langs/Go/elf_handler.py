@@ -52,7 +52,7 @@ class ELFHandler(AbstractELFHandler):
                 lib_match = lib_match[1]
                 if lib_match[:len(b'go/src/')] == b'go/src/':
                     lib_match = lib_match[len(b'go/src/'):]
-                if b'internal' in lib_match or b'runtime' in lib_match:
+                if b'internal' in lib_match or b'runtime' in lib_match or b'github.com/':
                     continue
                 if b'/' in lib_match:
                     lib_match = lib_match[:lib_match.rindex(b'/')]
