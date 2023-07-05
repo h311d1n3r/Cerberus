@@ -148,7 +148,7 @@ class ELFHandler(AbstractELFHandler):
             if download_output.returncode != 0:
                 logging.error('Couldn\'t download '+lib_name+' with version v'+lib_version+'.')
                 logging.error(download_output.stderr.decode())
-        logging.info('Building standalone ELF with \033[1;'+str(LogFormatter.FORMAT_COLORS[logging.INFO])+'mgoliath\033[0;'+str(LogFormatter.FORMAT_COLORS[logging.INFO])+'m...')
+        logging.info('Building standalone ELF...')
         build_output = subprocess.run([go_path, 'build', '-o', 'standalone/standalone.so', 'build_mod.go'], cwd=session_dir, capture_output=True)
         if build_output.returncode != 0:
             logging.error('An error occured during building process.')
