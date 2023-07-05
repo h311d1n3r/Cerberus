@@ -28,7 +28,7 @@ jobs:
       with:
         python-version: '3.10'
     - name: python_dependencies
-      run: pip3 install pyinstaller lief
+      run: pip3 install -r requirements.txt
     - name: compile
       run: ./build.sh
     - name: append_path
