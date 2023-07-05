@@ -22,9 +22,11 @@ class AbstractELFHandler(ABC):
         if os.path.exists(elf_path):
             self.elf_path = elf_path
             self.elf = ELF.parse(elf_path)
-            if not self.request_radare2_analysis():
-                logging.error('radare2 analysis failed...')
-                sys.exit(1)
+            self.funcs = self.elf.functions
+            if len(self.funcs) == 0 or self.should_analyze_with_r2():
+                if not self.request_radare2_analysis():
+                    logging.error('radare2 analysis failed...')
+                    sys.exit(1)
             self.is_stripped = True
             if self.elf.has_section('.symtab') or self.elf.has_section('.strtab'):
                 self.is_stripped = False
@@ -49,6 +51,10 @@ class AbstractELFHandler(ABC):
         
     @abstractmethod
     def download_and_build_libs(self, session_dir):
+        pass
+
+    @abstractmethod
+    def should_analyze_with_r2(self):
         pass
 
     def request_radare2_analysis(self):

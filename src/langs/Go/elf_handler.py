@@ -164,3 +164,6 @@ class ELFHandler(AbstractELFHandler):
 
     def get_lib_path(self, lib_dir):
         return lib_dir
+    
+    def should_analyze_with_r2(self):
+        return True

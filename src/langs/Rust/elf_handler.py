@@ -147,3 +147,7 @@ class ELFHandler(AbstractELFHandler):
         if self.elf_arch == ELF.ARCH.i386:
             return lib_dir+'/target/i686-unknown-linux-gnu/release'
         return lib_dir+'/target/release'
+
+    def should_analyze_with_r2(self):
+        return False
+
