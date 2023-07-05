@@ -58,11 +58,18 @@ class AbstractELFHandler(ABC):
             logging.warning('In-depth analysis with \033[1;'+str(LogFormatter.FORMAT_COLORS[logging.INFO])+'mradare2\033[0;'+str(LogFormatter.FORMAT_COLORS[logging.INFO])+'m is required for this program. Please install it and run again.')
             return False
         logging.info('In-depth analysis with \033[1;'+str(LogFormatter.FORMAT_COLORS[logging.INFO])+'mradare2\033[0;'+str(LogFormatter.FORMAT_COLORS[logging.INFO])+'m...')
-        r2_proc = subprocess.Popen(['radare2', '-q', '-c', 'aaa', '-c', 'afl', self.elf_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        r2_out_name = '/tmp/r2_out_'+str(os.getpid())+'.txt'
+        r2_out_f = open(r2_out_name, 'w')
+        r2_proc = subprocess.Popen(['radare2', '-q', '-c', 'aaa', '-c', 'afl', self.elf_path], stdout=r2_out_f, stderr=subprocess.PIPE)
         r2_proc.wait()
-        r2_out, r2_err = r2_proc.communicate()
+        r2_proc.communicate()
+        r2_out_f.close()
         Func = type('Func', (), {'address': 0, 'size': 0, 'name': None})
-        for line in r2_out.decode().split('\n'):
+        r2_out_f = open(r2_out_name, 'r')
+        r2_out = r2_out_f.read()
+        r2_out_f.close()
+        os.remove(r2_out_name)
+        for line in r2_out.split('\n'):
             if line[0:2] != '0x':
                 continue
             vals = line.split(' ')

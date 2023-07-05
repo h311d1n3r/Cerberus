@@ -32,11 +32,11 @@ class ELFHandler(AbstractELFHandler):
             self.go_version = self.go_version[0]
             self.go_version = self.go_version[0].decode() + '.' + self.go_version[1].decode() + self.go_version[2].decode()
             logging.info('Identified \033[1;'+str(LogFormatter.LOG_COLORS['MAGENTA'])+'mGo v'+self.go_version)
-            lib_matches = re.findall(b'/go/pkg/mod/(.+?)\.(s|go)', elf_content)
+            lib_matches = re.findall(b'go(.*?)/pkg/mod/(.+?)\.(s|go)', elf_content)
             for lib_match in lib_matches:
-                if lib_match[1] == b's':
+                if lib_match[2] == b's':
                     continue
-                lib_match = lib_match[0]
+                lib_match = lib_match[1]
                 if b'golang.org' in lib_match:
                     continue
                 lib_name = lib_match[:lib_match.rindex(b'@')].decode()
@@ -44,11 +44,13 @@ class ELFHandler(AbstractELFHandler):
                 lib_version = lib_version[:lib_version.index(b'/')].decode()
                 if lib_name not in self.libs:
                     self.libs[lib_name] = lib_version
-            lib_matches = re.findall(b'go/src/(.+?)\.(s|go)', elf_content)
+            lib_matches = re.findall(b'go(.*?)/src/(.+?)\.(s|go)', elf_content)
             for lib_match in lib_matches:
-                if lib_match[1] == b's':
+                if lib_match[2] == b's':
                     continue
-                lib_match = lib_match[0]
+                lib_match = lib_match[1]
+                if lib_match[:len(b'go/src/')] == b'go/src/':
+                    lib_match = lib_match[len(b'go/src/'):]
                 if b'internal' in lib_match or b'runtime' in lib_match:
                     continue
                 if b'/' in lib_match:
