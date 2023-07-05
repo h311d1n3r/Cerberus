@@ -17,6 +17,8 @@ jobs:
       run: sudo apt install binutils gcc-multilib g++-multilib
     - name: setup_rust
       uses: actions-rs/toolchain@v1
+    - name: setup_go
+      uses: actions/setup-go@v4
       with:
         toolchain: stable
     - name: setup_python
@@ -77,6 +79,40 @@ jobs:
           cerberus ./test_$i --no-prompt -output ./test_$i-syms
           result=$(nm test_$i-syms)
           cd ../..
+          expected_result=$(cat 'result.txt')
+          IFS='\n' read -ra expected_result_arr <<< $expected_result
+          for expected_result_line in ${expected_result_arr[@]};
+          do
+            if [[ $result != *$expected_result_line* ]]
+            then
+              echo "Failure !"
+              echo "Content of result :"
+              echo $result
+              exit 1
+            fi
+          done
+          echo "Success !"
+          cd ../../../
+        done
+    - name: compile_go_tests
+      run: |
+        for i in $(seq 1 1 `ls ./test/Go | wc -l`)
+        do
+          echo "Compiling Go test n°$i"
+          cd test/Go/test_$i/src
+          go get ./...
+          go build -ldflags="-s -w" -o ../test_1 test_1.go
+          cd ../../../..
+        done
+    - name: run_go_tests
+      run: |
+        echo "Running Go tests"
+        for i in $(seq 1 1 `ls ./test/Go | wc -l`)
+        do
+          echo "Starting Go test n°$i"
+          cd test/Go/test_1
+          cerberus ./test_$i --no-prompt -output ./test_$i-syms
+          result=$(nm test_$i-syms)
           expected_result=$(cat 'result.txt')
           IFS='\n' read -ra expected_result_arr <<< $expected_result
           for expected_result_line in ${expected_result_arr[@]};
