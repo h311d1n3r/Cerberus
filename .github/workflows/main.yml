@@ -17,10 +17,12 @@ jobs:
       run: sudo apt install binutils gcc-multilib g++-multilib
     - name: setup_rust
       uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
     - name: setup_go
       uses: actions/setup-go@v4
       with:
-        toolchain: stable
+        go-version: '>=1.15.0'
     - name: setup_python
       uses: actions/setup-python@v4
       with:
