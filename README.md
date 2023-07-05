@@ -1,11 +1,11 @@
 # Cerberus
 ## Description
-### A Python tool to unstrip Rust binaries on Linux
-**Cerberus** is the tool you want to use to make Rust static analysis a lot easier.  
+### A Python tool to unstrip Rust and Go binaries on Linux
+**Cerberus** is the tool you want to use to make Rust and Go static analysis a lot easier.  
 Based on hashing and scoring systems, it can retrieve lots of symbol names.
 ## How does it work ?
-After analyzing your ELF binary to find the used crates, **Cerberus** will download and build them.  
-Then the tool will hash (in various ways) the functions in your file and in the crates to make matches.  
+After analyzing your ELF binary to find the used libraries, **Cerberus** will download and build them.  
+Then the tool will hash (in various ways) the functions in your file and in the libraries to make matches.  
 ## Table of contents
 [Build the tool](#build)  
 [How to use ?](#how)  
@@ -18,7 +18,7 @@ Then the tool will hash (in various ways) the functions in your file and in the 
 <a name="build"/>
 
 ## Build the tool  
-1. You need to have **Python3**, **Cargo** and the **binutils** package installed on your system.  
+1. You need to have **Python3**, **Cargo**, **Go** and the **binutils** package installed on your system.  
 2. Clone the repository.  
 3. Install Python dependencies using `pip3 install -r requirements.txt`.  
 4. Build the tool using `./build.sh`.  
@@ -48,6 +48,7 @@ Increasing this value will reduce the number of matched functions but speed up e
 ### Flags
 `help` -> Displays a help message.  
 `debug` -> Enable debug level of logging.  
+`no-prompt` -> Automatically skips user prompts  
 
 <a name="how_example"/>
 
