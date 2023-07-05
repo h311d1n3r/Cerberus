@@ -8,6 +8,7 @@ import tarfile
 import subprocess
 import requests
 import sys
+import params
 from shutil import which
 from lief import ELF
 from log import LogFormatter
@@ -71,9 +72,10 @@ class ELFHandler(AbstractELFHandler):
             return True
         logging.warning('Couldn\'t find \033[1;'+str(LogFormatter.FORMAT_COLORS[logging.WARNING])+'mGoliath\033[0;'+str(LogFormatter.FORMAT_COLORS[logging.WARNING])+'m on PATH !')
         logging.info('\033[1;'+str(LogFormatter.FORMAT_COLORS[logging.INFO])+'mGoliath\033[0;'+str(LogFormatter.FORMAT_COLORS[logging.INFO])+'m is a fork of the go compiler that prevents deadcode elimination (https://github.com/h311d1n3r/Goliath).')
-        usr_dl_goliath = input('\033[0;'+str(LogFormatter.FORMAT_COLORS[logging.INFO])+'mDownload latest version ? (Y/n) : \033[0;'+str(LogFormatter.LOG_COLORS['WHITE'])+'m')
-        if usr_dl_goliath.lower().startswith('n'):
-            return False
+        if not params.NO_PROMPT:
+            usr_dl_goliath = input('\033[0;'+str(LogFormatter.FORMAT_COLORS[logging.INFO])+'mDownload latest version ? (Y/n) : \033[0;'+str(LogFormatter.LOG_COLORS['WHITE'])+'m')
+            if usr_dl_goliath.lower().startswith('n'):
+                return False
         release_url = 'https://github.com/h311d1n3r/Goliath/releases.atom'
         response = requests.get(release_url)
         if response.status_code == 200:
