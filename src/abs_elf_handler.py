@@ -5,7 +5,6 @@ import hashlib
 import params
 import re
 import subprocess
-import copy
 from lief import ELF
 from log import LogFormatter
 from abc import ABC, abstractmethod
@@ -23,7 +22,7 @@ class AbstractELFHandler(ABC):
         if os.path.exists(elf_path):
             self.elf_path = elf_path
             self.elf = ELF.parse(elf_path)
-            self.funcs = copy.deepcopy(self.elf.functions)
+            self.funcs = self.elf.functions
             if len(self.funcs) == 0:
                 if not self.request_radare2_analysis():
                     logging.error('radare2 analysis failed...')

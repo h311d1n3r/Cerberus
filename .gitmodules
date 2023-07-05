@@ -1,3 +1,4 @@
+
 [submodule "lib/goliath"]
 	path = lib/goliath
-	url = https://github.com/h311d1n3r/goliath
+	url = https://github.com/h311d1n3r/Goliath
