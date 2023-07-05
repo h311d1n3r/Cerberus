@@ -26,19 +26,23 @@ class ELFHandler(AbstractELFHandler):
         self.go_version = None
         with open(self.elf_path, 'rb') as elf_file:
             elf_content = elf_file.read()
-            self.go_version = re.findall(b'go(\d)\.(\d{2})?(\.\d)?', elf_content)
+            self.go_version = re.search(b'go\d+\.\d+\.\d+', elf_content)
+            if self.go_version is not None:
+            	self.go_version = self.go_version.group().decode()[2:]
+            else:
+            	self.go_version = re.search(b'go\d+\.\d+', elf_content)
+            	if self.go_version is not None:
+            	    self.go_version = self.go_version.group().decode()[2:]
             if self.go_version is None:
                 logging.fatal('Unable to identify Go version...')
                 sys.exit(1)
-            self.go_version = self.go_version[0]
-            self.go_version = self.go_version[0].decode() + '.' + self.go_version[1].decode() + self.go_version[2].decode()
             logging.info('Identified \033[1;'+str(LogFormatter.LOG_COLORS['MAGENTA'])+'mGo v'+self.go_version)
             lib_matches = re.findall(b'go(.*?)/pkg/mod/(.+?)\.(s|go)', elf_content)
             for lib_match in lib_matches:
                 if lib_match[2] == b's':
                     continue
                 lib_match = lib_match[1]
-                if b'golang.org' in lib_match:
+                if b'golang.org' in lib_match or b'@' not in lib_match:
                     continue
                 lib_name = lib_match[:lib_match.rindex(b'@')].decode()
                 lib_version = lib_match[lib_match.rindex(b'@')+2:]
