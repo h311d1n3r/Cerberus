@@ -14,7 +14,12 @@ jobs:
     - name: clone_project
       uses: actions/checkout@v3
     - name: apt_dependencies
-      run: sudo apt install binutils gcc-multilib g++-multilib radare2
+      run: sudo apt install binutils gcc-multilib g++-multilib
+    - name: setup_radare2
+      run: |
+        git clone https://github.com/radare/radare2.git
+        cd radare2
+        ./sys/install.sh
     - name: setup_rust
       uses: actions-rs/toolchain@v1
       with:
