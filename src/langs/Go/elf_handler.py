@@ -75,7 +75,7 @@ class ELFHandler(AbstractELFHandler):
             logging.success('\033[1;'+str(LogFormatter.FORMAT_COLORS[logging.SUCCESS])+'mGoliath\033[0;'+str(LogFormatter.FORMAT_COLORS[logging.SUCCESS])+'m was found !')
             return True
         logging.warning('Couldn\'t find \033[1;'+str(LogFormatter.FORMAT_COLORS[logging.WARNING])+'mGoliath\033[0;'+str(LogFormatter.FORMAT_COLORS[logging.WARNING])+'m on PATH !')
-        logging.info('\033[1;'+str(LogFormatter.FORMAT_COLORS[logging.INFO])+'mGoliath\033[0;'+str(LogFormatter.FORMAT_COLORS[logging.INFO])+'m is a fork of the go compiler that prevents deadcode elimination (https://github.com/h311d1n3r/Goliath).')
+        logging.info('\033[1;'+str(LogFormatter.FORMAT_COLORS[logging.INFO])+'mGoliath\033[0;'+str(LogFormatter.FORMAT_COLORS[logging.INFO])+'m is a patcher of the go compiler that prevents deadcode elimination (https://github.com/h311d1n3r/Goliath).')
         if not params.NO_PROMPT:
             usr_dl_goliath = input('\033[0;'+str(LogFormatter.FORMAT_COLORS[logging.INFO])+'mDownload latest version ? (Y/n) : \033[0;'+str(LogFormatter.LOG_COLORS['WHITE'])+'m')
             if usr_dl_goliath.lower().startswith('n'):
