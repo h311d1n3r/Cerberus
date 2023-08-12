@@ -1,6 +1,6 @@
 import re
 import logging
-import urllib.request
+import requests
 import os
 import gzip
 import shutil
@@ -56,7 +56,12 @@ class ELFHandler(AbstractELFHandler):
         for crate_name in self.libs:
             crate_version = self.libs[crate_name]
             crate_url = 'https://crates.io/api/v1/crates/'+crate_name+'/'+crate_version+'/download'
-            urllib.request.urlretrieve(crate_url, session_dir+'/'+crate_name)
+            req=requests.get(crate_url)
+            rsp=req.content
+            file=open(session_dir+"/"+crate_name,"wb")
+            file.write(rsp)
+            file.close()
+            # urllib.request.urlretrieve(crate_url, session_dir+'/'+crate_name)
         logging.success('Done !')
         logging.info('Extracting crates from their archives...')
         for archive_name in os.listdir(session_dir):
