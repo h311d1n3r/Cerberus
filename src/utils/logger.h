@@ -3,15 +3,19 @@
 
 #include <string>
 #include <map>
+#include <vector>
 
 extern std::map<std::string, uint8_t> LOG_COLORS;
+extern std::map<std::string, std::pair<uint8_t, uint8_t>> LOG_LEVELS;
+extern std::map<char, uint8_t> LOG_STYLES;
 
 class FCout {
 private:
-    void format(std::string& s);
+    std::vector<std::pair<uint8_t,uint8_t>> args_stack;
 public:
     FCout operator<<(std::string s);
     FCout operator<<(std::ostream&(*pManip)(std::ostream&));
+    void format(std::string& s);
 };
 
 extern FCout fcout;
