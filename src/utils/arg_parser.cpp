@@ -1,7 +1,9 @@
 #include <utils/arg_parser.h>
 #include <utils/logger.h>
 #include <global_defs.h>
+#include <filesystem>
 
+namespace fs = std::filesystem;
 using namespace std;
 
 string ArgParser::format_help() {
@@ -46,7 +48,11 @@ CONFIG* ArgParser::compute_args(int argc, char **argv) {
     if(this->parser.is_used("--help") || !config->binary_path.length()) {
         string help = this->format_help();
         fcout << help << endl;
-        return nullptr;
+        exit(0);
+    }
+    if(!fs::exists(config->binary_path)) {
+        fcout << "$(critical)File $(critical:u)" << config->binary_path << "$ does not exist !" << endl;
+        exit(1);
     }
     return config;
 }

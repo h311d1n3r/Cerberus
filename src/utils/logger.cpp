@@ -77,8 +77,9 @@ void FCout::format(std::string& s) {
                 res += "\033["+to_string(font_mode)+";"+to_string(LOG_COLORS[arg_name])+"m";
             } else if(LOG_LEVELS.find(arg_name) != LOG_LEVELS.end()) {
                 pair<uint8_t, uint8_t> level = LOG_LEVELS[arg_name];
+                res += "\033["+to_string(font_mode)+";"+to_string(level.first)+"m";
+                if(this->args_stack.size() == 0 || this->args_stack.at(this->args_stack.size()-1).first != level.first) res += string("[")+(char)level.second+"] ";
                 args_stack.push_back(pair(level.first, font_mode));
-                res += "\033["+to_string(font_mode)+";"+to_string(level.first)+"m["+(char)level.second+"] ";
             }
             s = s.substr(index+3+arg_name.length()+(has_font_mode?2:0));
         } else if(args_stack.size() > 0) {
