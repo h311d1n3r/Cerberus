@@ -11,8 +11,9 @@ private:
     int64_t quick_sort_partition(int64_t low, int64_t high) {
         ValueType pivot = this->map[high].second;
         int64_t i = (low - 1);
+        if(i < 0) i = 0;
         for(int64_t j = low; j <= high - 1; j++) {
-            if(this->map[j].second < pivot) {
+            if((invert_sorting && this->map[j].second > pivot) || (!invert_sorting && this->map[j].second < pivot)) {
                 std::swap(this->map[i], this->map[j]);
             }
         }
@@ -26,6 +27,7 @@ private:
             quick_sort(part + 1, high);
         }
     }
+    bool invert_sorting = false;
 public:
     ValueType& operator[](const KeyType key) {
         for(std::pair<KeyType, ValueType>& pair : this->map) {
@@ -36,6 +38,11 @@ public:
         return new_pair->second;
     }
     void sort() {
+        invert_sorting = false;
+        quick_sort(0, this->map.size()-1);
+    }
+    void invert_sort() {
+        invert_sorting = true;
         quick_sort(0, this->map.size()-1);
     }
     std::pair<KeyType, ValueType> at(int64_t i) {

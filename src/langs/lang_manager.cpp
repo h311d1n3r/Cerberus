@@ -7,46 +7,46 @@
 using namespace std;
 
 map<LANG, string> name_from_lang = {
-    {LANG::Rust, "Rust"},
-    {LANG::Go, "Go"}
+    {LANG::UNKNOWN_LANG, "Unknown"},
+    {LANG::RUST, "Rust"},
+    {LANG::GO, "Go"}
 };
 
 vector<pair<string, LANG>> LANG_PATTERNS = {
-    std::pair("/rustc-", LANG::Rust),
-    std::pair("/.cargo/", LANG::Rust),
-    std::pair("/go-", LANG::Go),
-    std::pair("runtime.go", LANG::Go)
+    std::pair("/rustc-", LANG::RUST),
+    std::pair("/.cargo/", LANG::RUST),
+    std::pair("/go-", LANG::GO),
+    std::pair("runtime.go", LANG::GO)
 };
 
-LangIdentifier::LangIdentifier(string elf_path) {
-    this->elf_path = elf_path;
+LangIdentifier::LangIdentifier(string input_path) {
+    this->input_path = input_path;
 }
 
 value_ordered_map<LANG, size_t> LangIdentifier::identify() {
     value_ordered_map<LANG, size_t> matches;
-    for(uint32_t i = 0; i < sizeof(LANG); i++) matches[(LANG)i] = 0;
-    matches[Rust]++;
-    matches.sort();
-    for (size_t i = 0 ; i < matches.size(); i++) {
-        pair<LANG, size_t> match = matches.at(i);
-        fcout << "Key: " << name_from_lang[match.first] << ", Value: " << to_string(match.second) << std::endl;
-    }
-    ifstream elf_file(this->elf_path);
-    if (!elf_file.is_open()) {
-        fcout << "$(critical)File $(critical:u)" << elf_path << "$ can't be opened !" << endl;
+    for(uint32_t i = 1; i < name_from_lang.size(); i++) matches[(LANG)i] = 0;
+    ifstream input_file(this->input_path);
+    if (!input_file.is_open()) {
+        fcout << "$(critical)File $(critical:u)" << input_path << "$ can't be opened !" << endl;
         exit(1);
     }
-    elf_file.seekg(0, ios::end);
-    size_t elf_sz = elf_file.tellg();
-    elf_file.seekg(0);
-    char elf_data[elf_sz];
-    elf_file.read(elf_data, elf_sz);
+    input_file.seekg(0, ios::end);
+    size_t input_sz = input_file.tellg();
+    input_file.seekg(0);
+    char input_data[input_sz];
+    input_file.read(input_data, input_sz);
     for(pair<string, LANG> lang_pattern : LANG_PATTERNS) {
-        char* current_pos = elf_data;
-        while((current_pos = strstr(current_pos, lang_pattern.first.c_str())) != nullptr) {
-            matches[lang_pattern.second]++;
-            current_pos += lang_pattern.first.length();
+        char* current_pos = input_data;
+        char* occurrence;
+        while(current_pos-input_data < input_sz) {
+            if ((occurrence = strstr(current_pos, lang_pattern.first.c_str())) != nullptr) {
+                current_pos = occurrence + lang_pattern.first.length();
+                matches[lang_pattern.second]++;
+            } else current_pos++;
         }
     }
+    input_file.close();
+    matches.invert_sort();
     return matches;
 }

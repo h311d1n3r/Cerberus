@@ -25,7 +25,6 @@ map<string, uint8_t> LOG_COLORS = {
 };
 
 map<string, pair<uint8_t, uint8_t>> LOG_LEVELS = {
-    {"debug", pair(94, '-')},
     {"success", pair(32, '+')},
     {"info", pair(36, '*')},
     {"warning", pair(33, '#')},
@@ -44,12 +43,14 @@ map<char, uint8_t> LOG_STYLES = {
 FCout FCout::operator<<(string s) {
     format(s);
     std::cout << s;
+    fcout = *this;
     return *this;
 }
 
 FCout FCout::operator<<(std::ostream&(*pManip)(std::ostream&)) {
-    std::cout << *pManip << "\033[0;"+to_string(LOG_COLORS["gray"])+"m";
+    cout << *pManip << "\033[0;"+to_string(LOG_COLORS["gray"])+"m";
     args_stack.clear();
+    fcout = *this;
     return *this;
 }
 
@@ -78,7 +79,7 @@ void FCout::format(std::string& s) {
             } else if(LOG_LEVELS.find(arg_name) != LOG_LEVELS.end()) {
                 pair<uint8_t, uint8_t> level = LOG_LEVELS[arg_name];
                 res += "\033["+to_string(font_mode)+";"+to_string(level.first)+"m";
-                if(this->args_stack.size() == 0 || this->args_stack.at(this->args_stack.size()-1).first != level.first) res += string("[")+(char)level.second+"] ";
+                if(!this->args_stack.size() || this->args_stack.at(this->args_stack.size()-1).first != level.first) res += string("[")+(char)level.second+"] ";
                 args_stack.push_back(pair(level.first, font_mode));
             }
             s = s.substr(index+3+arg_name.length()+(has_font_mode?2:0));
