@@ -19,4 +19,10 @@ struct LIBRARY {
     std::string version;
 };
 
+enum BIN_TYPE {
+    UNKNOWN_TYPE,
+    ELF,
+    PE,
+};
+
 #endif //CERBERUS_BIN_TYPES_H

@@ -5,12 +5,12 @@
 
 class PeHandler : public BinaryHandler {
 public:
-    void strip_analysis();
-    void libs_analysis();
-    size_t libs_installation();
-    size_t functions_analysis();
-    void functions_hashing();
-    size_t functions_matching();
+    PeHandler(std::string bin_path) : BinaryHandler(bin_path) {}
+    void strip_analysis() override;
+    void libs_analysis() override;
+    size_t libs_installation() override;
+    size_t functions_analysis() override;
+    size_t functions_matching() override;
 };
 
 #endif //CERBERUS_PE_HANDLER_H

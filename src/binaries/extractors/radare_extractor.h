@@ -5,8 +5,9 @@
 
 class RadareExtractor : public BinaryExtractor {
 public:
-    std::vector<FUNCTION> extract_functions();
-    std::vector<SECTION> extract_sections();
+    RadareExtractor(std::string bin_path) : BinaryExtractor(bin_path) {}
+    std::vector<FUNCTION*> extract_functions() override;
+    std::vector<SECTION*> extract_sections() override;
 };
 
 #endif //CERBERUS_RADARE_EXTRACTOR_H

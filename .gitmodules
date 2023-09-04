@@ -4,3 +4,6 @@
 [submodule "lib/argparse"]
 	path = lib/argparse
 	url = https://github.com/p-ranav/argparse
+[submodule "lib/lief"]
+	path = lib/lief
+	url = https://github.com/lief-project/LIEF

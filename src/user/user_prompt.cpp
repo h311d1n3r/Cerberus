@@ -9,7 +9,7 @@ bool ask_yes_no(string question, bool should_yes) {
     fcout << "$(info)" << question << " (" << (should_yes?"Y":"y") << "/" << (should_yes?"n":"N") << ") ";
     string response;
     getline(cin, response);
-    if(!question.size()) return should_yes;
+    if(!response.size()) return should_yes;
     if(should_yes) {
         if(tolower(response.at(0), locale()) == 'n') return false;
         return true;

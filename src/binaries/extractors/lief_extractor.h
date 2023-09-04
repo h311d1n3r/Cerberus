@@ -2,11 +2,15 @@
 #define CERBERUS_LIEF_EXTRACTOR_H
 
 #include <binaries/bin_extractor.h>
+#include <LIEF/LIEF.hpp>
 
 class LiefExtractor : public BinaryExtractor {
+private:
+    std::unique_ptr<LIEF::Binary> bin;
 public:
-    std::vector<FUNCTION> extract_functions();
-    std::vector<SECTION> extract_sections();
+    LiefExtractor(std::string bin_path);
+    std::vector<FUNCTION*> extract_functions() override;
+    std::vector<SECTION*> extract_sections() override;
 };
 
 #endif //CERBERUS_LIEF_EXTRACTOR_H

@@ -5,12 +5,7 @@
 #include <map>
 #include <vector>
 #include <types/value_ordered_map.h>
-
-enum LANG {
-    UNKNOWN_LANG,
-    RUST,
-    GO
-};
+#include <langs/lang_types.h>
 
 extern std::map<LANG, std::string> name_from_lang;
 

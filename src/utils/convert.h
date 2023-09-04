@@ -2,6 +2,7 @@
 #define CERBERUS_CONVERT_H
 
 #include <string>
+#include <vector>
 
 template<typename IntType> bool string_to_int(std::string s, IntType& val) {
     try {
@@ -12,5 +13,7 @@ template<typename IntType> bool string_to_int(std::string s, IntType& val) {
         return false;
     }
 }
+
+std::vector<std::string> split_string(const std::string& input, char delimiter);
 
 #endif //CERBERUS_CONVERT_H

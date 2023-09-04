@@ -3,12 +3,7 @@
 
 #include <map>
 #include <string>
-
-enum BIN_TYPE {
-    UNKNOWN_TYPE,
-    ELF,
-    PE,
-};
+#include <binaries/bin_types.h>
 
 extern std::map<BIN_TYPE, std::string> bin_type_names;
 
