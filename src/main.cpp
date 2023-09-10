@@ -30,24 +30,7 @@ void global_exit() {
     curl_global_cleanup();
 }
 
-void start_analysis() {
-    BinaryHandler* handler;
-    switch(type) {
-        case PE:
-            handler = new PeHandler(config->binary_path, work_dir, selected_lang);
-            break;
-        case ELF:
-            handler = new ElfHandler(config->binary_path, work_dir, selected_lang);
-            break;
-        default:
-            return;
-    }
-    handler->strip_analysis();
-    if(handler->is_stripped()) fcout << "$(info)File was found to be $(info:b)stripped$." << endl;
-    else {
-        fcout << "$(warning)File was not found to be $(warning:b)stripped$..." << endl;
-        if(!ask_yes_no("Resume analysis ?", true)) return;
-    }
+bool install_dependencies(BinaryHandler* handler) {
     DependencyManager dep_manager(usr_config, work_dir);
     std::vector<OS_PACKAGE*> os_packages;
     std::vector<GIT_PACKAGE*> git_packages;
@@ -84,28 +67,50 @@ void start_analysis() {
                         if(dep_manager.install_package(package)) fcout << "$(success)Done." << endl;
                         else {
                             fcout << "$(error)An error occurred during installation..." << endl;
-                            return;
+                            return false;
                         }
                     }
                     for(GIT_PACKAGE* package : git_packages) {
                         if(dep_manager.install_package(package)) fcout << "$(success)Done." << endl;
                         else {
                             fcout << "$(error)An error occurred during installation..." << endl;
-                            return;
+                            return false;
                         }
                     }
                 } else {
                     fcout << "$(error)Ending execution." << endl;
-                    return;
+                    return false;
                 }
             } else {
                 fcout << "$(error)Without a known package manager, please install these packages and try again." << endl;
-                return;
+                return false;
             }
         } else {
             fcout << "$(error)Without being root or having sudo, please manually install these packages and try again." << endl;
-            return;
+            return false;
         }
+    }
+    return true;
+}
+
+void start_analysis() {
+    BinaryHandler* handler;
+    switch(type) {
+        case PE:
+            handler = new PeHandler(config->binary_path, work_dir, selected_lang);
+            break;
+        case ELF:
+            handler = new ElfHandler(config->binary_path, work_dir, selected_lang);
+            break;
+        default:
+            return;
+    }
+    if(!install_dependencies(handler)) return;
+    handler->strip_analysis();
+    if(handler->is_stripped()) fcout << "$(info)File was found to be $(info:b)stripped$." << endl;
+    else {
+        fcout << "$(warning)File was not found to be $(warning:b)stripped$..." << endl;
+        if(!ask_yes_no("Resume analysis ?", true)) return;
     }
     fcout << "$(info)Extracting libraries..." << endl;
     size_t libs_amount = handler->libs_extraction();
@@ -123,6 +128,9 @@ void start_analysis() {
     }
     fcout << "$(info)Installing libraries..." << endl;
     handler->libs_installation();
+    fcout << "$(info)Analyzing functions..." << endl;
+    size_t funcs_sz = handler->functions_analysis();
+    fcout << "$(success)Analyzed $(success:b)" << to_string(funcs_sz) << "$ functions." << endl;
 }
 
 std::string generate_work_dir() {

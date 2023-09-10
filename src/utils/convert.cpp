@@ -13,6 +13,16 @@ vector<string> split_string(const string& input, char delimiter) {
     return tokens;
 }
 
+vector<std::string> filter_empty_strings(const vector<std::string>& tab) {
+    vector<std::string> result;
+    for (const std::string& s : tab) {
+        if (!s.empty()) {
+            result.push_back(s);
+        }
+    }
+    return result;
+}
+
 string strip(const string& str) {
     size_t first = str.find_first_not_of(" \t\n");
     if (string::npos == first) {

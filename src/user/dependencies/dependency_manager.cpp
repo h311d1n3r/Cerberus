@@ -55,5 +55,6 @@ bool DependencyManager::install_package(GIT_PACKAGE* package) {
     if(package->custom_command.size()) build_cmd = package->custom_command;
     if(!config->is_root) build_cmd = string("echo ")+password+string(" | sudo -S sh -c \"unset SUDO_USER ; ") + build_cmd + string("\"");
     executor->execute_command(string("cd ")+package->repo_name+string("; ")+build_cmd, &res);
+    if(package->remove_dir) filesystem::remove_all(work_dir+string("/")+package->repo_name);
     return res.code == package->success_code;
 }

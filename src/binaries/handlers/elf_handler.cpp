@@ -16,11 +16,13 @@ void ElfHandler::strip_analysis() {
     }
 }
 
-void ElfHandler::libs_analysis() {
-
+size_t ElfHandler::functions_analysis() {
+    vector<FUNCTION*> funcs = this->lief_extractor->extract_functions();
+    if(!funcs.size()) funcs = this->radare_extractor->extract_functions();
+    return funcs.size();
 }
 
-size_t ElfHandler::functions_analysis() {
+void ElfHandler::libs_analysis() {
 
 }
 

@@ -25,6 +25,7 @@ struct GIT_PACKAGE : PACKAGE {
     std::string url;
     std::string custom_command = "";
     std::int32_t success_code = 0;
+    bool remove_dir = true;
     GIT_PACKAGE(std::string repo_name, std::string binary, std::string url) {
         os = false;
         PACKAGE::binary = binary;
@@ -36,6 +37,9 @@ struct GIT_PACKAGE : PACKAGE {
     }
     GIT_PACKAGE(std::string repo_name, std::string binary, std::string url, int32_t success_code, std::string custom_command) : GIT_PACKAGE(repo_name, binary, url, success_code) {
         GIT_PACKAGE::custom_command = custom_command;
+    }
+    GIT_PACKAGE(std::string repo_name, std::string binary, std::string url, int32_t success_code, std::string custom_command, bool remove_dir) : GIT_PACKAGE(repo_name, binary, url, success_code, custom_command) {
+        GIT_PACKAGE::remove_dir = remove_dir;
     }
 };
 
