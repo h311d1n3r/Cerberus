@@ -2,6 +2,7 @@
 #define CERBERUS_BIN_TYPES_H
 
 #include <cstdint>
+#include <string>
 
 struct FUNCTION {
     uint64_t start;

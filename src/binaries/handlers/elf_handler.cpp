@@ -16,10 +16,6 @@ void ElfHandler::strip_analysis() {
     }
 }
 
-size_t ElfHandler::libs_installation() {
-
-}
-
 void ElfHandler::libs_analysis() {
 
 }

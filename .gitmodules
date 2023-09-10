@@ -7,3 +7,6 @@
 [submodule "lib/lief"]
 	path = lib/lief
 	url = https://github.com/lief-project/LIEF
+[submodule "lib/gzip-hpp"]
+	path = lib/gzip-hpp
+	url = https://github.com/mapbox/gzip-hpp

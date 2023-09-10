@@ -4,6 +4,6 @@
 #include <regex>
 #include <vector>
 
-std::vector<std::smatch> search_regex(char* data, size_t data_sz, std::string pattern);
+std::vector<std::string> search_regex(char* data, size_t data_sz, std::string pattern);
 
 #endif //CERBERUS_SEARCH_H

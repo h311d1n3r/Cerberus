@@ -1,7 +1,18 @@
 #include <langs/lib_regex.h>
 #include <utils/convert.h>
+#include <iostream>
 
 using namespace std;
+
+std::vector<std::string> rust_lib_regex = {
+    "/.cargo/(.+?)\\.rs",
+    "/cargo/(.+?)\\.rs"
+};
+
+std::vector<std::string> go_lib_regex = {
+    "go(.*?)/pkg/mod/(.+?)\\.(s|go)",
+    "go(.*?)/src/(.+?)\\.(s|go)"
+};
 
 LIBRARY* rust_extract_callback(string match) {
     size_t null_term_index;
@@ -9,10 +20,18 @@ LIBRARY* rust_extract_callback(string match) {
         match = match.substr(0, null_term_index);
     }
     vector<string> match_parts = split_string(match, '/');
+    if(match_parts.size() < 6) return nullptr;
+    string lib_and_version = match_parts.at(5);
+    size_t delim_index;
+    if((delim_index = lib_and_version.rfind('-')) == string::npos) return nullptr;
+    LIBRARY* lib = new LIBRARY;
+    lib->name = lib_and_version.substr(0, delim_index);
+    lib->version = lib_and_version.substr(delim_index+1);
+    return lib;
 }
 
 LIBRARY* go_extract_callback(string match) {
-
+    return nullptr;
 }
 
 map<LANG, LibExtractCallback> lib_extract_callbacks = {

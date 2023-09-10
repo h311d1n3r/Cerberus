@@ -4,10 +4,6 @@ void PeHandler::strip_analysis() {
 
 }
 
-size_t PeHandler::libs_installation() {
-
-}
-
 void PeHandler::libs_analysis() {
 
 }

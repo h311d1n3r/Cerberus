@@ -8,15 +8,9 @@
 #include <binaries/bin_types.h>
 #include <functional>
 
-std::vector<std::string> rust_lib_regex = {
-    "/.cargo/(.+?)\\.rs",
-    "/cargo/(.+?)\\.rs"
-};
+extern std::vector<std::string> rust_lib_regex;
 
-std::vector<std::string> go_lib_regex = {
-    "go(.*?)/pkg/mod/(.+?)\\.(s|go)",
-    "go(.*?)/src/(.+?)\\.(s|go)"
-};
+extern std::vector<std::string> go_lib_regex;
 
 using LibExtractCallback = std::function<LIBRARY*(std::string)>;
 

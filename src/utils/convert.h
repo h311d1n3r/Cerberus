@@ -16,4 +16,6 @@ template<typename IntType> bool string_to_int(std::string s, IntType& val) {
 
 std::vector<std::string> split_string(const std::string& input, char delimiter);
 
+std::string strip(const std::string& str);
+
 #endif //CERBERUS_CONVERT_H
