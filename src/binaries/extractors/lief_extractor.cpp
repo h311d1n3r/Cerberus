@@ -4,6 +4,15 @@ LiefExtractor::LiefExtractor(std::string bin_path) : BinaryExtractor(bin_path) {
     this->bin = LIEF::Parser::parse(bin_path);
 }
 
+BIN_ARCH LiefExtractor::extract_arch() {
+    switch(this->bin->header().architecture()) {
+        case LIEF::ARCH_X86:
+            if(this->bin->header().is_32()) return BIN_ARCH::X86;
+            return BIN_ARCH::X86_64;
+    }
+    return BIN_ARCH::UNKNOWN_ARCH;
+}
+
 std::vector<FUNCTION*> LiefExtractor::extract_functions() {
     std::vector<FUNCTION*> funcs;
     for(LIEF::Function lief_func : this->bin->exported_functions()) {

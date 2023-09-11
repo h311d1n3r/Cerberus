@@ -31,3 +31,8 @@ string strip(const string& str) {
     size_t last = str.find_last_not_of(" \t\n");
     return str.substr(first, (last - first + 1));
 }
+
+bool ends_with(string const &value, string const &ending) {
+    if (ending.size() > value.size()) return false;
+    return equal(ending.rbegin(), ending.rend(), value.rbegin());
+}

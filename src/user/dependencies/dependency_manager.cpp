@@ -58,3 +58,10 @@ bool DependencyManager::install_package(GIT_PACKAGE* package) {
     if(package->remove_dir) filesystem::remove_all(work_dir+string("/")+package->repo_name);
     return res.code == package->success_code;
 }
+
+bool DependencyManager::install_package(CUSTOM_PACKAGE *package) {
+    fcout << "$(info)Installing $(info:b)" << package->package_name << "$..." << endl;
+    COMMAND_RESULT res;
+    executor->execute_command(string("sh -c \"") + package->command + string("\""), &res);
+    return res.code == package->success_code;
+}

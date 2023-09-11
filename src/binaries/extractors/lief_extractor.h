@@ -9,6 +9,7 @@ private:
     std::unique_ptr<LIEF::Binary> bin;
 public:
     LiefExtractor(std::string bin_path);
+    BIN_ARCH extract_arch() override;
     std::vector<FUNCTION*> extract_functions() override;
     std::vector<SECTION*> extract_sections() override;
 };

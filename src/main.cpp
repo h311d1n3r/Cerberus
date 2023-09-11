@@ -27,6 +27,7 @@ vector<PACKAGE*> packages = {
     new OS_PACKAGE{"git", "git"},
     new OS_PACKAGE{"cargo", "cargo"},
     new GIT_PACKAGE{"radare2", "radare2", "https://github.com/radareorg/radare2", 0, "cd .. ; mv radare2 ../ ; ../radare2/sys/install.sh", false},
+    new CUSTOM_PACKAGE{"rust", "rustup", "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs > rust_install.sh ; sh +x rust_install.sh -y ; rm rust_install.sh"}
 };
 
 void global_init() {
@@ -41,13 +42,22 @@ bool install_dependencies(BinaryHandler* handler) {
     DependencyManager dep_manager(usr_config, work_dir);
     std::vector<OS_PACKAGE*> os_packages;
     std::vector<GIT_PACKAGE*> git_packages;
+    std::vector<CUSTOM_PACKAGE*> custom_packages;
     for(PACKAGE* package : packages) {
         if(!dep_manager.is_package_installed(package)) {
-            if(package->os) os_packages.push_back((OS_PACKAGE*)package);
-            else git_packages.push_back((GIT_PACKAGE*)package);
+            switch(package->package_type) {
+                case 0:
+                    os_packages.push_back((OS_PACKAGE*) package);
+                    break;
+                case 1:
+                    git_packages.push_back((GIT_PACKAGE*) package);
+                    break;
+                case 2:
+                    custom_packages.push_back((CUSTOM_PACKAGE*) package);
+            }
         }
     }
-    if(!os_packages.size() && !git_packages.size()) fcout << "$(info)No additional package is required." << endl;
+    if(!os_packages.size() && !git_packages.size() && !custom_packages.size()) fcout << "$(info)No additional package is required." << endl;
     else {
         fcout << "$(info)The following packages are required :" << endl;
         if(os_packages.size()) {
@@ -60,6 +70,12 @@ bool install_dependencies(BinaryHandler* handler) {
             fcout << "$(bright_red)With $(bright_red:b)git$:" << endl;
             for (GIT_PACKAGE *package : git_packages) {
                 fcout << "$(red)- $(red:b)" + package->repo_name << endl;
+            }
+        }
+        if(custom_packages.size()) {
+            fcout << "$(bright_green)$(bright_green:b)Custom$:" << endl;
+            for (CUSTOM_PACKAGE *package : custom_packages) {
+                fcout << "$(green)- $(green:b)" + package->package_name << endl;
             }
         }
         if(usr_config->is_root || usr_config->has_sudo) {
@@ -78,6 +94,13 @@ bool install_dependencies(BinaryHandler* handler) {
                         }
                     }
                     for(GIT_PACKAGE* package : git_packages) {
+                        if(dep_manager.install_package(package)) fcout << "$(success)Done." << endl;
+                        else {
+                            fcout << "$(error)An error occurred during installation..." << endl;
+                            return false;
+                        }
+                    }
+                    for(CUSTOM_PACKAGE* package : custom_packages) {
                         if(dep_manager.install_package(package)) fcout << "$(success)Done." << endl;
                         else {
                             fcout << "$(error)An error occurred during installation..." << endl;
@@ -112,6 +135,10 @@ void start_analysis() {
             break;
         default:
             return;
+    }
+    if(handler->extract_architecture() == BIN_ARCH::UNKNOWN_ARCH) {
+        fcout << "$(error)Unsupported architecture !" << endl;
+        return;
     }
     if(!install_dependencies(handler)) return;
     handler->strip_analysis();

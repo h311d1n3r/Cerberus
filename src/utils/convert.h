@@ -20,4 +20,6 @@ std::vector<std::string> filter_empty_strings(const std::vector<std::string>& ta
 
 std::string strip(const std::string& str);
 
+bool ends_with(std::string const & value, std::string const & ending);
+
 #endif //CERBERUS_CONVERT_H

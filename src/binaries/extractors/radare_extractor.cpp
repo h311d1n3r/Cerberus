@@ -4,6 +4,10 @@
 
 using namespace std;
 
+BIN_ARCH RadareExtractor::extract_arch() {
+
+}
+
 vector<FUNCTION*> RadareExtractor::extract_functions() {
     vector<FUNCTION*> funcs;
     COMMAND_RESULT res;

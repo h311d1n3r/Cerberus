@@ -5,6 +5,8 @@
 using namespace std;
 
 void CommandExecutor::execute_command(string command, COMMAND_RESULT* result) {
+    char current_dir[1024];
+    getcwd(current_dir, sizeof(current_dir));
     if (chdir(this->env_dir.c_str()) != 0) {
         result->code = -1;
         result->response = "";
@@ -14,6 +16,7 @@ void CommandExecutor::execute_command(string command, COMMAND_RESULT* result) {
     if (!pipe) {
         result->code = -1;
         result->response = "";
+        chdir(current_dir);
         return;
     }
     stringstream ss;
@@ -21,5 +24,5 @@ void CommandExecutor::execute_command(string command, COMMAND_RESULT* result) {
     while (fgets(buffer, sizeof(buffer), pipe) != nullptr) ss << string(buffer, strlen(buffer));
     result->code = pclose(pipe);
     result->response = ss.str();
-    return;
+    chdir(current_dir);
 }

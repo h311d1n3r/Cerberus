@@ -7,14 +7,14 @@
 #include <command/command_executor.h>
 
 struct PACKAGE {
-    bool os;
+    uint8_t package_type;
     std::string binary;
 };
 
 struct OS_PACKAGE : PACKAGE {
     std::string name;
     OS_PACKAGE(std::string name, std::string binary) {
-        PACKAGE::os = true;
+        PACKAGE::package_type = 0;
         PACKAGE::binary = binary;
         OS_PACKAGE::name = name;
     }
@@ -27,7 +27,7 @@ struct GIT_PACKAGE : PACKAGE {
     std::int32_t success_code = 0;
     bool remove_dir = true;
     GIT_PACKAGE(std::string repo_name, std::string binary, std::string url) {
-        os = false;
+        package_type = 1;
         PACKAGE::binary = binary;
         GIT_PACKAGE::repo_name = repo_name;
         GIT_PACKAGE::url = url;
@@ -40,6 +40,21 @@ struct GIT_PACKAGE : PACKAGE {
     }
     GIT_PACKAGE(std::string repo_name, std::string binary, std::string url, int32_t success_code, std::string custom_command, bool remove_dir) : GIT_PACKAGE(repo_name, binary, url, success_code, custom_command) {
         GIT_PACKAGE::remove_dir = remove_dir;
+    }
+};
+
+struct CUSTOM_PACKAGE : PACKAGE {
+    std::string package_name;
+    std::string command;
+    int32_t success_code = 0;
+    CUSTOM_PACKAGE(std::string package_name, std::string binary, std::string command) {
+        PACKAGE::package_type = 2;
+        PACKAGE::binary = binary;
+        CUSTOM_PACKAGE::package_name = package_name;
+        CUSTOM_PACKAGE::command = command;
+    }
+    CUSTOM_PACKAGE(std::string package_name, std::string binary, std::string command, int32_t success_code) : CUSTOM_PACKAGE(package_name, binary, command) {
+        CUSTOM_PACKAGE::success_code = success_code;
     }
 };
 
@@ -59,6 +74,7 @@ public:
     bool is_package_installed(PACKAGE* package);
     bool install_package(OS_PACKAGE* package);
     bool install_package(GIT_PACKAGE* package);
+    bool install_package(CUSTOM_PACKAGE* package);
 };
 
 #endif //CERBERUS_DEPENDENCY_MANAGER_H

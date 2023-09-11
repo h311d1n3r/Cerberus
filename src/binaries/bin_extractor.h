@@ -10,6 +10,7 @@ protected:
     std::string bin_path;
 public:
     BinaryExtractor(std::string bin_path) : bin_path(bin_path) {};
+    virtual BIN_ARCH extract_arch() = 0;
     virtual std::vector<FUNCTION*> extract_functions() = 0;
     virtual std::vector<SECTION*> extract_sections() = 0;
 };

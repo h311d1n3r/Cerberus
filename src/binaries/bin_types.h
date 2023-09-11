@@ -28,4 +28,10 @@ enum BIN_TYPE {
     PE,
 };
 
+enum BIN_ARCH {
+    UNKNOWN_ARCH,
+    X86_64,
+    X86
+};
+
 #endif //CERBERUS_BIN_TYPES_H

@@ -16,6 +16,7 @@ protected:
     std::string work_dir;
     LANG lang;
     Algorithm* algorithm;
+    BIN_ARCH arch;
     bool stripped;
     std::vector<LIBRARY*> libs;
     std::vector<FUNCTION*> functions;
@@ -26,6 +27,7 @@ public:
         this->lief_extractor = new LiefExtractor(bin_path);
         this->radare_extractor = new RadareExtractor(bin_path);
     }
+    BIN_ARCH extract_architecture();
     virtual void strip_analysis() = 0;
     size_t libs_extraction();
     size_t libs_installation();

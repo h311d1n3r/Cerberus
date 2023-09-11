@@ -7,8 +7,9 @@
 class LibInstaller {
 protected:
     std::string work_dir;
+    BIN_ARCH arch;
 public:
-    LibInstaller(std::string work_dir) : work_dir(work_dir) {}
+    LibInstaller(std::string work_dir, BIN_ARCH arch) : work_dir(work_dir), arch(arch) {}
     virtual bool install_lib(LIBRARY* lib) = 0;
 };
 

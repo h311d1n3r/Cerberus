@@ -5,7 +5,7 @@
 
 class GoLibInstaller : public LibInstaller {
 public:
-    GoLibInstaller(std::string work_dir) : LibInstaller(work_dir) {}
+    GoLibInstaller(std::string work_dir, BIN_ARCH arch) : LibInstaller(work_dir, arch) {}
     bool install_lib(LIBRARY* lib) override;
 };
 

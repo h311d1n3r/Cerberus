@@ -8,6 +8,11 @@
 
 using namespace std;
 
+BIN_ARCH BinaryHandler::extract_architecture() {
+    this->arch = lief_extractor->extract_arch();
+    return this->arch;
+}
+
 size_t BinaryHandler::libs_extraction() {
     vector<string> lib_regex;
     switch(lang) {
@@ -50,10 +55,10 @@ size_t BinaryHandler::libs_installation() {
     LibInstaller* installer;
     switch(lang) {
         case RUST:
-            installer = new RustLibInstaller(this->work_dir);
+            installer = new RustLibInstaller(this->work_dir, this->arch);
             break;
         case GO:
-            installer = new GoLibInstaller(this->work_dir);
+            installer = new GoLibInstaller(this->work_dir, this->arch);
         default:
             return 0;
     }
