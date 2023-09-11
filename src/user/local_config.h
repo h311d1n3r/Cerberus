@@ -23,7 +23,6 @@ enum PACKAGE_MANAGER {
 
 struct LOCAL_CONFIG {
     PACKAGE_MANAGER package_manager;
-    bool has_internet;
     bool is_root;
     bool has_sudo;
 };

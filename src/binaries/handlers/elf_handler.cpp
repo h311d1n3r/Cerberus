@@ -19,11 +19,12 @@ void ElfHandler::strip_analysis() {
 size_t ElfHandler::functions_analysis() {
     vector<FUNCTION*> funcs = this->lief_extractor->extract_functions();
     if(!funcs.size()) funcs = this->radare_extractor->extract_functions();
+    algorithm->process_binary(&funcs);
     return funcs.size();
 }
 
 void ElfHandler::libs_analysis() {
-
+    
 }
 
 size_t ElfHandler::functions_matching() {

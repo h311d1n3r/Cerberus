@@ -57,7 +57,11 @@ size_t BinaryHandler::libs_installation() {
         default:
             return 0;
     }
-    for(LIBRARY* lib : this->libs) installer->install_lib(lib);
+    size_t success_ctr = 0;
+    for(LIBRARY* lib : this->libs) {
+        if(installer->install_lib(lib)) success_ctr++;
+    }
+    return success_ctr;
 }
 
 void BinaryHandler::function_hashing(FUNCTION* func) {

@@ -12,6 +12,7 @@
 #include <filesystem>
 #include <uuid/uuid.h>
 #include <curl/curl.h>
+#include "algorithm/part_hash_algorithm.h"
 
 namespace fs = std::filesystem;
 using namespace std;
@@ -21,6 +22,12 @@ CONFIG* config;
 LANG selected_lang = LANG::UNKNOWN_LANG;
 BIN_TYPE type;
 LOCAL_CONFIG* usr_config;
+
+vector<PACKAGE*> packages = {
+    new OS_PACKAGE{"git", "git"},
+    new OS_PACKAGE{"cargo", "cargo"},
+    new GIT_PACKAGE{"radare2", "radare2", "https://github.com/radareorg/radare2", 0, "cd .. ; mv radare2 ../ ; ../radare2/sys/install.sh", false},
+};
 
 void global_init() {
     curl_global_init(CURL_GLOBAL_ALL);
@@ -34,7 +41,7 @@ bool install_dependencies(BinaryHandler* handler) {
     DependencyManager dep_manager(usr_config, work_dir);
     std::vector<OS_PACKAGE*> os_packages;
     std::vector<GIT_PACKAGE*> git_packages;
-    for(PACKAGE* package : handler->get_packages()) {
+    for(PACKAGE* package : packages) {
         if(!dep_manager.is_package_installed(package)) {
             if(package->os) os_packages.push_back((OS_PACKAGE*)package);
             else git_packages.push_back((GIT_PACKAGE*)package);
@@ -95,12 +102,13 @@ bool install_dependencies(BinaryHandler* handler) {
 
 void start_analysis() {
     BinaryHandler* handler;
+    Algorithm* algorithm = new PartHashAlgorithm(config);
     switch(type) {
         case PE:
-            handler = new PeHandler(config->binary_path, work_dir, selected_lang);
+            handler = new PeHandler(config->binary_path, work_dir, selected_lang, algorithm);
             break;
         case ELF:
-            handler = new ElfHandler(config->binary_path, work_dir, selected_lang);
+            handler = new ElfHandler(config->binary_path, work_dir, selected_lang, algorithm);
             break;
         default:
             return;
@@ -127,9 +135,18 @@ void start_analysis() {
         return;
     }
     fcout << "$(info)Installing libraries..." << endl;
-    handler->libs_installation();
+    size_t libs_installed = handler->libs_installation();
+    if(!libs_installed) {
+        fcout << "$(error)No libraries were successfully installed..." << endl;
+        return;
+    }
+    fcout << "$(success)Installed $(success:b)" << to_string(libs_installed) << "$ libraries." << endl;
     fcout << "$(info)Analyzing functions..." << endl;
     size_t funcs_sz = handler->functions_analysis();
+    if(!funcs_sz) {
+        fcout << "$(error)No functions were successfully analyzed..." << endl;
+        return;
+    }
     fcout << "$(success)Analyzed $(success:b)" << to_string(funcs_sz) << "$ functions." << endl;
 }
 
@@ -150,8 +167,6 @@ int main(int argc, char *argv[]) {
     if(config) {
         fcout << "$(bright_red:b)---------- $(red:b)" << TOOL_NAME << " (v" << TOOL_VERSION << ")$ ----------" << endl;
         usr_config = identify_local_config();
-        if(usr_config->has_internet) fcout << "$(info)Internet connection is enabled." << endl;
-        else fcout << "$(warning)Internet connection looks disabled..." << endl;
         if(usr_config->package_manager != PACKAGE_MANAGER::UNKNOWN) fcout << "$(info)Identified package manager: $(info:b)" << name_from_package_manager[usr_config->package_manager] << endl;
         else fcout << "$(warning)Could not identify package manager..." << endl;
         if(usr_config->is_root) fcout << "$(info)Running as root." << endl;
@@ -171,7 +186,7 @@ int main(int argc, char *argv[]) {
             if(agree_lang) selected_lang = langs.at(0).first;
         }
         if(selected_lang == LANG::UNKNOWN_LANG) {
-            fcout << "$$(info)Currently supported languages :\n";
+            fcout << "$(info)Currently supported languages :\n";
             for(size_t lang_i = 0; lang_i < langs.size(); lang_i++) {
                 fcout << "$(magenta)" << to_string(lang_i+1) << ". $(magenta:b)" << name_from_lang[langs.at(lang_i).first] << endl;
             }

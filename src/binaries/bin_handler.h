@@ -8,22 +8,21 @@
 #include <binaries/extractors/radare_extractor.h>
 #include <langs/lang_types.h>
 #include <user/dependencies/dependency_manager.h>
+#include <algorithm/algorithm.h>
 
 class BinaryHandler {
 protected:
     std::string bin_path;
     std::string work_dir;
     LANG lang;
+    Algorithm* algorithm;
     bool stripped;
     std::vector<LIBRARY*> libs;
     std::vector<FUNCTION*> functions;
-    std::vector<PACKAGE*> packages;
     LiefExtractor* lief_extractor;
     RadareExtractor* radare_extractor;
 public:
-    BinaryHandler(std::string bin_path, std::string work_dir, LANG lang) : bin_path(bin_path), work_dir(work_dir), lang(lang) {
-        this->packages.push_back(new OS_PACKAGE{"git", "git"});
-        this->packages.push_back(new GIT_PACKAGE{"radare2", "radare2", "https://github.com/radareorg/radare2", 0, "cd .. ; mv radare2 ../ ; ../radare2/sys/install.sh", false});
+    BinaryHandler(std::string bin_path, std::string work_dir, LANG lang, Algorithm* algorithm) : bin_path(bin_path), work_dir(work_dir), lang(lang), algorithm(algorithm) {
         this->lief_extractor = new LiefExtractor(bin_path);
         this->radare_extractor = new RadareExtractor(bin_path);
     }
@@ -42,9 +41,6 @@ public:
     }
     std::vector<FUNCTION*> get_functions() {
         return this->functions;
-    }
-    std::vector<PACKAGE*> get_packages() {
-        return packages;
     }
 };
 

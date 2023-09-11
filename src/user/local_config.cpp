@@ -1,5 +1,4 @@
 #include <user/local_config.h>
-#include <netdb.h>
 #include <unistd.h>
 
 using namespace std;
@@ -28,10 +27,6 @@ PACKAGE_MANAGER find_package_manager() {
     return PACKAGE_MANAGER::UNKNOWN;
 }
 
-bool check_internet_connection() {
-    return gethostbyname("github.com") != nullptr;
-}
-
 bool is_root() {
     return geteuid() == 0;
 }
@@ -42,7 +37,6 @@ bool has_sudo() {
 
 LOCAL_CONFIG* identify_local_config() {
     LOCAL_CONFIG* config = new LOCAL_CONFIG();
-    config->has_internet = check_internet_connection();
     config->package_manager = find_package_manager();
     config->is_root = is_root();
     config->has_sudo = has_sudo();

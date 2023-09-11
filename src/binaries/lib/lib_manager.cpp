@@ -6,12 +6,14 @@
 using namespace std;
 
 void LibManager::main_menu() {
-    fcout << "$(info)Here is the current list of libraries :" << endl;
+    fcout << "$(info)Here is the current list of libraries :\n";
+    fcout << "$(red:b)-------------------------------$\n";
     uint8_t lib_i = 1;
     for(LIBRARY* lib : this->libs) {
-        fcout << "$(info)" << to_string(lib_i) << ". $(bright_magenta:b)" << lib->name << "$$(red):$$(magenta:b)" << lib->version << endl;
+        fcout << to_string(lib_i) << ". $(bright_magenta:b)" << lib->name << "$$(red):$$(magenta:b)" << lib->version << "$\n";
         lib_i++;
     }
+    fcout << "$(red:b)-------------------------------$\n";
     fcout << "$(info)$(info:b)1$. Validate $(info:b)2$. Add library $(info:b)3$. Change library version $(info:b)4$. Remove library" << endl;
 }
 
