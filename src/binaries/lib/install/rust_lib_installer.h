@@ -22,11 +22,11 @@ public:
 
 class RustLibInstaller : public LibInstaller {
 private:
-    FileDownloader* downloader;
+    FileDownloader downloader;
     void check_and_install_arch(std::string arch_name);
 public:
     RustLibInstaller(std::string work_dir, BIN_ARCH arch);
-    bool install_lib(LIBRARY* lib) override;
+    bool install_lib(LIBRARY lib) override;
 };
 
 #endif //CERBERUS_RUST_LIB_INSTALLER_H

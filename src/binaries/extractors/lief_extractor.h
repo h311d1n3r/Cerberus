@@ -10,8 +10,8 @@ private:
 public:
     LiefExtractor(std::string bin_path);
     BIN_ARCH extract_arch() override;
-    std::vector<FUNCTION*> extract_functions() override;
-    std::vector<SECTION*> extract_sections() override;
+    std::vector<std::unique_ptr<FUNCTION>> extract_functions() override;
+    std::vector<std::unique_ptr<SECTION>> extract_sections() override;
 };
 
 #endif //CERBERUS_LIEF_EXTRACTOR_H

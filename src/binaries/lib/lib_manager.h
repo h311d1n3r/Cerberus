@@ -4,6 +4,7 @@
 #include <vector>
 #include <binaries/bin_types.h>
 #include <string>
+#include <memory>
 
 enum USER_CHOICE {
     NO_CHOICE = 0,
@@ -15,13 +16,13 @@ enum USER_CHOICE {
 
 class LibManager {
 private:
-    std::vector<LIBRARY*>& libs;
+    std::vector<std::unique_ptr<LIBRARY>>& libs;
     void main_menu();
     void add_lib_menu();
     void change_version_menu();
     void remove_lib_menu();
 public:
-    LibManager(std::vector<LIBRARY*>& libs) : libs(libs) {}
+    LibManager(std::vector<std::unique_ptr<LIBRARY>>& libs) : libs(libs) {}
     void manage();
 };
 

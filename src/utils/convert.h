@@ -20,6 +20,8 @@ std::vector<std::string> filter_empty_strings(const std::vector<std::string>& ta
 
 std::string strip(const std::string& str);
 
-bool ends_with(std::string const & value, std::string const & ending);
+bool ends_with(std::string const& value, std::string const& ending);
+
+std::string demangle_function_name(const std::string& mangled_name);
 
 #endif //CERBERUS_CONVERT_H

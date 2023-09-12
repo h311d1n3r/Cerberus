@@ -1,5 +1,6 @@
 #include <utils/convert.h>
 #include <sstream>
+#include <command/command_executor.h>
 
 using namespace std;
 
@@ -35,4 +36,12 @@ string strip(const string& str) {
 bool ends_with(string const &value, string const &ending) {
     if (ending.size() > value.size()) return false;
     return equal(ending.rbegin(), ending.rend(), value.rbegin());
+}
+
+string demangle_function_name(const string& mangled_name) {
+    CommandExecutor executor("./");
+    COMMAND_RESULT res;
+    executor.execute_command(string("c++filt \"")+mangled_name+string("\""), &res);
+    if(!res.code) return res.response.substr(0, res.response.length()-1);
+    return mangled_name;
 }

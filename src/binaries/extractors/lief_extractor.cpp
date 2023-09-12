@@ -1,4 +1,7 @@
 #include <binaries/extractors/lief_extractor.h>
+#include <utils/convert.h>
+
+using namespace std;
 
 LiefExtractor::LiefExtractor(std::string bin_path) : BinaryExtractor(bin_path) {
     this->bin = LIEF::Parser::parse(bin_path);
@@ -13,25 +16,26 @@ BIN_ARCH LiefExtractor::extract_arch() {
     return BIN_ARCH::UNKNOWN_ARCH;
 }
 
-std::vector<FUNCTION*> LiefExtractor::extract_functions() {
-    std::vector<FUNCTION*> funcs;
+vector<unique_ptr<FUNCTION>> LiefExtractor::extract_functions() {
+    vector<unique_ptr<FUNCTION>> funcs;
     for(LIEF::Function lief_func : this->bin->exported_functions()) {
-        FUNCTION* func = new FUNCTION;
+        unique_ptr<FUNCTION> func = make_unique<FUNCTION>();
         func->start = lief_func.address();
         func->end = lief_func.address() + lief_func.size();
-        funcs.push_back(func);
+        func->name = demangle_function_name(lief_func.name());
+        funcs.push_back(move(func));
     }
     return funcs;
 }
 
-std::vector<SECTION*> LiefExtractor::extract_sections() {
-    std::vector<SECTION*> sections;
+vector<unique_ptr<SECTION>> LiefExtractor::extract_sections() {
+    vector<unique_ptr<SECTION>> sections;
     for(LIEF::Section lief_section : this->bin->sections()) {
-        SECTION* section = new SECTION;
+        unique_ptr<SECTION> section = make_unique<SECTION>();
         section->start = lief_section.offset();
         section->end = lief_section.offset() + lief_section.size();
         section->name = lief_section.name();
-        sections.push_back(section);
+        sections.push_back(move(section));
     }
     return sections;
 }

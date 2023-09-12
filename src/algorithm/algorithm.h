@@ -5,6 +5,7 @@
 #include <fstream>
 #include <binaries/bin_types.h>
 #include <utils/config.h>
+#include <memory>
 
 class Algorithm {
 protected:
@@ -17,8 +18,8 @@ public:
     ~Algorithm() {
         bin_file->close();
     }
-    virtual void process_binary(std::vector<FUNCTION*>* bin_funcs) = 0;
-    virtual void process_lib(std::string lib_path, std::vector<FUNCTION*>* lib_funcs) = 0;
+    virtual void process_binary(std::vector<std::unique_ptr<FUNCTION>>* bin_funcs) = 0;
+    virtual void process_lib(std::string lib_path, std::vector<std::unique_ptr<FUNCTION>>* lib_funcs) = 0;
 };
 
 #endif //CERBERUS_ALGORITHM_H

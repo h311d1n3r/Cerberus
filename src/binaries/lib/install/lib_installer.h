@@ -3,6 +3,7 @@
 
 #include <string>
 #include <binaries/bin_types.h>
+#include <memory>
 
 class LibInstaller {
 protected:
@@ -10,7 +11,7 @@ protected:
     BIN_ARCH arch;
 public:
     LibInstaller(std::string work_dir, BIN_ARCH arch) : work_dir(work_dir), arch(arch) {}
-    virtual bool install_lib(LIBRARY* lib) = 0;
+    virtual bool install_lib(LIBRARY lib) = 0;
 };
 
 #endif //CERBERUS_LIB_INSTALLER_H

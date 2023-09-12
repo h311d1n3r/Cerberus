@@ -139,17 +139,16 @@ void RustLibInstaller::check_and_install_arch(string arch_name) {
     }
 }
 
-RustLibInstaller::RustLibInstaller(string work_dir, BIN_ARCH arch) : LibInstaller(work_dir, arch) {
-    downloader = new FileDownloader();
+RustLibInstaller::RustLibInstaller(string work_dir, BIN_ARCH arch) : LibInstaller(work_dir, arch), downloader() {
     if(arch == BIN_ARCH::X86) check_and_install_arch("i686-unknown-linux-gnu");
 }
 
-bool RustLibInstaller::install_lib(LIBRARY *lib) {
-    fcout << "$(info)Installing $(bright_magenta:b)" << lib->name << "$$(red):$$(magenta:b)" << lib->version << "$..." << endl;
-    string output_dir_name = this->work_dir+"/"+lib->name+"-"+lib->version;
+bool RustLibInstaller::install_lib(LIBRARY lib) {
+    fcout << "$(info)Installing $(bright_magenta:b)" << lib.name << "$$(red):$$(magenta:b)" << lib.version << "$..." << endl;
+    string output_dir_name = this->work_dir+"/"+lib.name+"-"+lib.version;
     string zip_file_name = output_dir_name+".crate";
     string tar_file_name = output_dir_name+".tar";
-    if(!this->downloader->download_file("https://crates.io/api/v1/crates/"+lib->name+"/"+lib->version+"/download", zip_file_name)) {
+    if(!this->downloader.download_file("https://crates.io/api/v1/crates/"+lib.name+"/"+lib.version+"/download", zip_file_name)) {
         fcout << "$(error)Failure..." << endl;
         return false;
     }

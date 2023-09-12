@@ -14,7 +14,7 @@ std::vector<std::string> go_lib_regex = {
     "go(.*?)/src/(.+?)\\.(s|go)"
 };
 
-LIBRARY* rust_extract_callback(string match) {
+unique_ptr<LIBRARY> rust_extract_callback(string match) {
     size_t null_term_index;
     if((null_term_index = match.find('\x00')) != string::npos) {
         match = match.substr(0, null_term_index);
@@ -24,13 +24,13 @@ LIBRARY* rust_extract_callback(string match) {
     string lib_and_version = match_parts.at(5);
     size_t delim_index;
     if((delim_index = lib_and_version.rfind('-')) == string::npos) return nullptr;
-    LIBRARY* lib = new LIBRARY;
+    unique_ptr<LIBRARY> lib = make_unique<LIBRARY>();
     lib->name = lib_and_version.substr(0, delim_index);
     lib->version = lib_and_version.substr(delim_index+1);
     return lib;
 }
 
-LIBRARY* go_extract_callback(string match) {
+unique_ptr<LIBRARY> go_extract_callback(string match) {
     return nullptr;
 }
 

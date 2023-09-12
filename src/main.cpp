@@ -12,7 +12,8 @@
 #include <filesystem>
 #include <uuid/uuid.h>
 #include <curl/curl.h>
-#include "algorithm/part_hash_algorithm.h"
+#include <algorithm/part_hash_algorithm.h>
+#include <utils/convert.h>
 
 namespace fs = std::filesystem;
 using namespace std;
@@ -26,6 +27,7 @@ LOCAL_CONFIG* usr_config;
 vector<PACKAGE*> packages = {
     new OS_PACKAGE{"git", "git"},
     new OS_PACKAGE{"cargo", "cargo"},
+    new OS_PACKAGE{"binutils", "c++filt"},
     new GIT_PACKAGE{"radare2", "radare2", "https://github.com/radareorg/radare2", 0, "cd .. ; mv radare2 ../ ; ../radare2/sys/install.sh", false},
     new CUSTOM_PACKAGE{"rust", "rustup", "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs > rust_install.sh ; sh +x rust_install.sh -y ; rm rust_install.sh"}
 };
@@ -154,7 +156,7 @@ void start_analysis() {
         return;
     }
     fcout << "$(success)Identified $(success:b)" << to_string(libs_amount) << "$ libraries." << endl;
-    std::vector<LIBRARY*> libs = handler->get_libs();
+    std::vector<std::unique_ptr<LIBRARY>>& libs = handler->get_libs();
     LibManager lib_manager(libs);
     lib_manager.manage();
     if(!libs.size()) {
@@ -168,13 +170,28 @@ void start_analysis() {
         return;
     }
     fcout << "$(success)Installed $(success:b)" << to_string(libs_installed) << "$ libraries." << endl;
-    fcout << "$(info)Analyzing functions..." << endl;
+    fcout << "$(info)Analyzing target functions..." << endl;
     size_t funcs_sz = handler->functions_analysis();
     if(!funcs_sz) {
         fcout << "$(error)No functions were successfully analyzed..." << endl;
         return;
     }
     fcout << "$(success)Analyzed $(success:b)" << to_string(funcs_sz) << "$ functions." << endl;
+    fcout << "$(info)Matching with functions from libraries..." << endl;
+    for(const auto& entry : fs::directory_iterator(work_dir)) {
+        if (fs::is_regular_file(entry)) {
+            fs::path file_path = entry.path();
+            if(ends_with(file_path.filename(), ".so")) {
+                handler->functions_matching(file_path.string());
+            }
+        }
+    }
+    size_t matches_sz = handler->get_matches_sz();
+    if(!matches_sz) {
+        fcout << "$(error)No functions were successfully matched..." << endl;
+        return;
+    }
+    fcout << "$(success)Matched $(success:b)" << to_string(matches_sz) << "$ functions. Matching rate: $(success:b)" << to_string((uint8_t)(matches_sz/(float)funcs_sz*100)) << endl;
 }
 
 std::string generate_work_dir() {

@@ -9,6 +9,7 @@ struct FUNCTION {
     uint64_t end;
     std::string name;
     std::string hash;
+    uint8_t score = 0;
 };
 
 struct SECTION {

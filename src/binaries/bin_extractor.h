@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <binaries/bin_types.h>
+#include <memory>
 
 class BinaryExtractor {
 protected:
@@ -11,8 +12,8 @@ protected:
 public:
     BinaryExtractor(std::string bin_path) : bin_path(bin_path) {};
     virtual BIN_ARCH extract_arch() = 0;
-    virtual std::vector<FUNCTION*> extract_functions() = 0;
-    virtual std::vector<SECTION*> extract_sections() = 0;
+    virtual std::vector<std::unique_ptr<FUNCTION>> extract_functions() = 0;
+    virtual std::vector<std::unique_ptr<SECTION>> extract_sections() = 0;
 };
 
 #endif //CERBERUS_BIN_EXTRACTOR_H

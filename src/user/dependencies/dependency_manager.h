@@ -64,12 +64,10 @@ class DependencyManager {
 private:
     LOCAL_CONFIG* config;
     std::string work_dir;
-    CommandExecutor* executor;
+    CommandExecutor executor;
     std::string password;
 public:
-    DependencyManager(LOCAL_CONFIG* config, std::string work_dir) : config(config), work_dir(work_dir) {
-        executor = new CommandExecutor(work_dir);
-    };
+    DependencyManager(LOCAL_CONFIG* config, std::string work_dir) : config(config), work_dir(work_dir), executor(work_dir) {};
     void set_password(std::string password);
     bool is_package_installed(PACKAGE* package);
     bool install_package(OS_PACKAGE* package);

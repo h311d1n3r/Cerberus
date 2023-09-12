@@ -34,16 +34,16 @@ size_t BinaryHandler::libs_extraction() {
     for(string reg : lib_regex) {
         vector<string> matches = search_regex(data, bin_file_sz, reg);
         for(string match : matches) {
-            LIBRARY* lib = lib_extract_callbacks[lang](match);
+            unique_ptr<LIBRARY> lib = lib_extract_callbacks[lang](match);
             if(lib) {
                 bool exists = false;
-                for(LIBRARY* lib2 : this->libs) {
+                for(unique_ptr<LIBRARY>& lib2 : this->libs) {
                     if(lib->name == lib2->name && lib->version == lib2->version) {
                         exists = true;
                         break;
                     }
                 }
-                if(!exists) this->libs.push_back(lib);
+                if(!exists) this->libs.push_back(move(lib));
             }
         }
     }
@@ -52,23 +52,25 @@ size_t BinaryHandler::libs_extraction() {
 }
 
 size_t BinaryHandler::libs_installation() {
-    LibInstaller* installer;
+    unique_ptr<LibInstaller> installer;
     switch(lang) {
         case RUST:
-            installer = new RustLibInstaller(this->work_dir, this->arch);
+            installer = make_unique<RustLibInstaller>(this->work_dir, this->arch);
             break;
         case GO:
-            installer = new GoLibInstaller(this->work_dir, this->arch);
+            installer = make_unique<GoLibInstaller>(this->work_dir, this->arch);
         default:
             return 0;
     }
     size_t success_ctr = 0;
-    for(LIBRARY* lib : this->libs) {
-        if(installer->install_lib(lib)) success_ctr++;
+    for(std::unique_ptr<LIBRARY>& lib : this->libs) {
+        if(installer->install_lib(*lib.get())) success_ctr++;
     }
     return success_ctr;
 }
 
-void BinaryHandler::function_hashing(FUNCTION* func) {
-
+size_t BinaryHandler::get_matches_sz() {
+    size_t matches = 0;
+    for(FUNCTION* func : functions) if(func->name.size()) matches++;
+    return matches;
 }

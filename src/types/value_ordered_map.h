@@ -33,9 +33,9 @@ public:
         for(std::pair<KeyType, ValueType>& pair : this->map) {
             if(pair.first == key) return pair.second;
         }
-        std::pair<KeyType, ValueType>* new_pair = new std::pair<KeyType, ValueType>(key, 0);
-        this->map.push_back(*new_pair);
-        return new_pair->second;
+        std::pair<KeyType, ValueType> new_pair = std::pair<KeyType, ValueType>(key, 0);
+        this->map.push_back(new_pair);
+        return this->map.at(this->map.size()-1).second;
     }
     void sort() {
         invert_sorting = false;

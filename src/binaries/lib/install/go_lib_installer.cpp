@@ -2,7 +2,7 @@
 
 using namespace std;
 
-bool GoLibInstaller::install_lib(LIBRARY *lib) {
+bool GoLibInstaller::install_lib(LIBRARY lib) {
 
     return false;
 }

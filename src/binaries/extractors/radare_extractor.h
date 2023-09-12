@@ -10,8 +10,8 @@ private:
 public:
     RadareExtractor(std::string bin_path) : BinaryExtractor(bin_path), executor("./") {}
     BIN_ARCH extract_arch() override;
-    std::vector<FUNCTION*> extract_functions() override;
-    std::vector<SECTION*> extract_sections() override;
+    std::vector<std::unique_ptr<FUNCTION>> extract_functions() override;
+    std::vector<std::unique_ptr<SECTION>> extract_sections() override;
 };
 
 #endif //CERBERUS_RADARE_EXTRACTOR_H

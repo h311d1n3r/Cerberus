@@ -18,7 +18,7 @@ protected:
     Algorithm* algorithm;
     BIN_ARCH arch;
     bool stripped;
-    std::vector<LIBRARY*> libs;
+    std::vector<std::unique_ptr<LIBRARY>> libs;
     std::vector<FUNCTION*> functions;
     LiefExtractor* lief_extractor;
     RadareExtractor* radare_extractor;
@@ -32,13 +32,12 @@ public:
     size_t libs_extraction();
     size_t libs_installation();
     virtual size_t functions_analysis() = 0;
-    virtual void libs_analysis() = 0;
-    void function_hashing(FUNCTION* func);
-    virtual size_t functions_matching() = 0;
+    virtual void functions_matching(std::string lib_path) = 0;
+    size_t get_matches_sz();
     bool is_stripped() {
         return this->stripped;
     }
-    std::vector<LIBRARY*> get_libs() {
+    std::vector<std::unique_ptr<LIBRARY>>& get_libs() {
         return this->libs;
     }
     std::vector<FUNCTION*> get_functions() {

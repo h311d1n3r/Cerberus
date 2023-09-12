@@ -9,7 +9,7 @@ void LibManager::main_menu() {
     fcout << "$(info)Here is the current list of libraries :\n";
     fcout << "$(red:b)-------------------------------$\n";
     uint8_t lib_i = 1;
-    for(LIBRARY* lib : this->libs) {
+    for(std::unique_ptr<LIBRARY>& lib : this->libs) {
         fcout << to_string(lib_i) << ". $(bright_magenta:b)" << lib->name << "$$(red):$$(magenta:b)" << lib->version << "$\n";
         lib_i++;
     }
@@ -18,14 +18,14 @@ void LibManager::main_menu() {
 }
 
 void LibManager::add_lib_menu() {
-    LIBRARY* lib = new LIBRARY;
+    std::unique_ptr<LIBRARY> lib = make_unique<LIBRARY>();
     lib->name = "";
     lib->version = "";
     fcout << "$(info)Name:$ ";
     while(!lib->name.size()) getline(cin, lib->name);
     fcout << "$(info)Version:$ ";
     while(!lib->version.size()) getline(cin, lib->version);
-    this->libs.push_back(lib);
+    this->libs.push_back(move(lib));
 }
 
 void LibManager::change_version_menu() {
@@ -34,7 +34,7 @@ void LibManager::change_version_menu() {
         return;
     }
     size_t index = ask_n("Index:", 1, this->libs.size());
-    LIBRARY* lib = this->libs.at(index - 1);
+    std::unique_ptr<LIBRARY>& lib = this->libs.at(index - 1);
     lib->version = "";
     fcout << "$(info)Version:$ ";
     while(!lib->version.size()) getline(cin, lib->version);
