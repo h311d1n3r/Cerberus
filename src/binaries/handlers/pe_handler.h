@@ -9,6 +9,7 @@ public:
     void strip_analysis() override;
     size_t functions_analysis() override;
     void functions_matching(std::string lib_path) override;
+    void post_matching() override;
 };
 
 #endif //CERBERUS_PE_HANDLER_H

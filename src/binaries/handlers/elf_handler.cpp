@@ -1,6 +1,6 @@
 #include <binaries/handlers/elf_handler.h>
 #include <vector>
-#include <iostream>
+#include <binaries/extractors/libelf_extractor.h>
 
 using namespace std;
 
@@ -19,14 +19,22 @@ void ElfHandler::strip_analysis() {
 size_t ElfHandler::functions_analysis() {
     vector<unique_ptr<FUNCTION>> funcs = this->lief_extractor->extract_functions();
     if(!funcs.size()) funcs = this->radare_extractor->extract_functions();
+    if(!funcs.size()) funcs = this->libelf_extractor->extract_functions();
     algorithm->process_binary(&funcs);
-    return funcs.size();
+    this->functions = move(funcs);
+    return this->functions.size();
 }
 
 void ElfHandler::functions_matching(string lib_path) {
     LiefExtractor lib_lief_extractor(lib_path);
+    LibelfExtractor libelf_extractor(lib_path);
     RadareExtractor lib_radare_extractor(lib_path);
     vector<unique_ptr<FUNCTION>> funcs = lib_lief_extractor.extract_functions();
+    if(!funcs.size()) funcs = libelf_extractor.extract_functions();
     if(!funcs.size()) funcs = lib_radare_extractor.extract_functions();
     algorithm->process_lib(lib_path, &funcs);
+}
+
+void ElfHandler::post_matching() {
+    algorithm->post_process(&functions);
 }

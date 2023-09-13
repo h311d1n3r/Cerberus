@@ -9,6 +9,7 @@
 #include <langs/lang_types.h>
 #include <user/dependencies/dependency_manager.h>
 #include <algorithm/algorithm.h>
+#include <binaries/extractors/libelf_extractor.h>
 
 class BinaryHandler {
 protected:
@@ -19,7 +20,7 @@ protected:
     BIN_ARCH arch;
     bool stripped;
     std::vector<std::unique_ptr<LIBRARY>> libs;
-    std::vector<FUNCTION*> functions;
+    std::vector<std::unique_ptr<FUNCTION>> functions;
     LiefExtractor* lief_extractor;
     RadareExtractor* radare_extractor;
 public:
@@ -33,14 +34,16 @@ public:
     size_t libs_installation();
     virtual size_t functions_analysis() = 0;
     virtual void functions_matching(std::string lib_path) = 0;
+    virtual void post_matching() = 0;
     size_t get_matches_sz();
+    void demangle_functions();
     bool is_stripped() {
         return this->stripped;
     }
     std::vector<std::unique_ptr<LIBRARY>>& get_libs() {
         return this->libs;
     }
-    std::vector<FUNCTION*> get_functions() {
+    std::vector<std::unique_ptr<FUNCTION>>& get_functions() {
         return this->functions;
     }
 };

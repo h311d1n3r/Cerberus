@@ -20,6 +20,7 @@ public:
     }
     virtual void process_binary(std::vector<std::unique_ptr<FUNCTION>>* bin_funcs) = 0;
     virtual void process_lib(std::string lib_path, std::vector<std::unique_ptr<FUNCTION>>* lib_funcs) = 0;
+    virtual void post_process(std::vector<std::unique_ptr<FUNCTION>>* bin_funcs) = 0;
 };
 
 #endif //CERBERUS_ALGORITHM_H

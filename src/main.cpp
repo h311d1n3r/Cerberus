@@ -33,6 +33,7 @@ vector<PACKAGE*> packages = {
 };
 
 void global_init() {
+    elf_version(EV_CURRENT);
     curl_global_init(CURL_GLOBAL_ALL);
 }
 
@@ -186,12 +187,16 @@ void start_analysis() {
             }
         }
     }
+    handler->post_matching();
     size_t matches_sz = handler->get_matches_sz();
     if(!matches_sz) {
         fcout << "$(error)No functions were successfully matched..." << endl;
         return;
     }
     fcout << "$(success)Matched $(success:b)" << to_string(matches_sz) << "$ functions. Matching rate: $(success:b)" << to_string((uint8_t)(matches_sz/(float)funcs_sz*100)) << endl;
+    fcout << "$(info)Demangling function names..." << endl;
+    handler->demangle_functions();
+    fcout << "$(success)Done !" << endl;
 }
 
 std::string generate_work_dir() {

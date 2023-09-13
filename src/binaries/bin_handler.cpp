@@ -4,6 +4,7 @@
 #include <binaries/lib/install/go_lib_installer.h>
 #include <langs/lib_regex.h>
 #include <utils/search.h>
+#include <utils/convert.h>
 #include <fstream>
 
 using namespace std;
@@ -71,6 +72,10 @@ size_t BinaryHandler::libs_installation() {
 
 size_t BinaryHandler::get_matches_sz() {
     size_t matches = 0;
-    for(FUNCTION* func : functions) if(func->name.size()) matches++;
+    for(unique_ptr<FUNCTION>& func : this->functions) if(func->name.size()) matches++;
     return matches;
+}
+
+void BinaryHandler::demangle_functions() {
+    for(unique_ptr<FUNCTION>& func : this->functions) func->name = demangle_function_name(func->name);
 }

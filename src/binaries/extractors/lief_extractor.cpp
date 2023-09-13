@@ -19,10 +19,11 @@ BIN_ARCH LiefExtractor::extract_arch() {
 vector<unique_ptr<FUNCTION>> LiefExtractor::extract_functions() {
     vector<unique_ptr<FUNCTION>> funcs;
     for(LIEF::Function lief_func : this->bin->exported_functions()) {
+        if(!lief_func.size()) continue;
         unique_ptr<FUNCTION> func = make_unique<FUNCTION>();
         func->start = lief_func.address();
         func->end = lief_func.address() + lief_func.size();
-        func->name = demangle_function_name(lief_func.name());
+        func->name = lief_func.name();
         funcs.push_back(move(func));
     }
     return funcs;

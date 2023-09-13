@@ -13,3 +13,7 @@ size_t PeHandler::functions_analysis() {
 void PeHandler::functions_matching(string lib_path) {
 
 }
+
+void PeHandler::post_matching() {
+
+}

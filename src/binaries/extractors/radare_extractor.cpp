@@ -21,7 +21,7 @@ vector<unique_ptr<FUNCTION>> RadareExtractor::extract_functions() {
             unique_ptr<FUNCTION> func = make_unique<FUNCTION>();
             func->start = stoull(vals[0].substr(2), nullptr, 16);
             func->end = func->start + stoull(vals[2]) - 1;
-            func->name = demangle_function_name(vals[3]);
+            func->name = vals[3];
             funcs.push_back(move(func));
         }
     }
