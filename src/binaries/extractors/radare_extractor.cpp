@@ -8,7 +8,7 @@ BIN_ARCH RadareExtractor::extract_arch() {
 
 }
 
-vector<unique_ptr<FUNCTION>> RadareExtractor::extract_functions() {
+vector<unique_ptr<FUNCTION>> RadareExtractor::extract_functions(BIN_ARCH arch) {
     vector<unique_ptr<FUNCTION>> funcs;
     COMMAND_RESULT res;
     executor.execute_command(string("radare2 -q -c aaa -c afl \"") + bin_path + string("\""), &res);

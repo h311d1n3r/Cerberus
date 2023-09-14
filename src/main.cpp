@@ -193,10 +193,13 @@ void start_analysis() {
         fcout << "$(error)No functions were successfully matched..." << endl;
         return;
     }
-    fcout << "$(success)Matched $(success:b)" << to_string(matches_sz) << "$ functions. Matching rate: $(success:b)" << to_string((uint8_t)(matches_sz/(float)funcs_sz*100)) << endl;
+    fcout << "$(success)Matched $(success:b)" << to_string(matches_sz) << "$ functions. Matching rate: $(success:b)" << to_string((uint8_t)(matches_sz/(float)funcs_sz*100)) << "%" << endl;
     fcout << "$(info)Demangling function names..." << endl;
     handler->demangle_functions();
     fcout << "$(success)Done !" << endl;
+    fcout << "$(info)Writing output file..." << endl;
+    if(handler->write_output(config->output_path)) fcout << "$(success)Done !" << endl;
+    else fcout << "$(error)An error occurred when writing to output file..." << endl;
 }
 
 std::string generate_work_dir() {

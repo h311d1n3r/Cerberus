@@ -38,7 +38,17 @@ bool ends_with(string const &value, string const &ending) {
     return equal(ending.rbegin(), ending.rend(), value.rbegin());
 }
 
-string demangle_function_name(const string& mangled_name) {
+void replace_all(string& str, const string& from, const string& to) {
+    if(from.empty()) return;
+    size_t start_pos = 0;
+    while((start_pos = str.find(from, start_pos)) != std::string::npos) {
+        str.replace(start_pos, from.length(), to);
+        start_pos += to.length();
+    }
+}
+
+string demangle_function_name(string& mangled_name) {
+    replace_all(mangled_name, string("$"), string("\\$"));
     CommandExecutor executor("./");
     COMMAND_RESULT res;
     executor.execute_command(string("c++filt \"")+mangled_name+string("\""), &res);

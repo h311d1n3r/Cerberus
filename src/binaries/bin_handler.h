@@ -24,8 +24,8 @@ protected:
     LiefExtractor* lief_extractor;
     RadareExtractor* radare_extractor;
 public:
-    BinaryHandler(std::string bin_path, std::string work_dir, LANG lang, Algorithm* algorithm) : bin_path(bin_path), work_dir(work_dir), lang(lang), algorithm(algorithm) {
-        this->lief_extractor = new LiefExtractor(bin_path);
+    BinaryHandler(std::string bin_path, std::string work_dir, LANG lang, Algorithm* algorithm, bool is_elf) : bin_path(bin_path), work_dir(work_dir), lang(lang), algorithm(algorithm) {
+        this->lief_extractor = new LiefExtractor(bin_path, is_elf);
         this->radare_extractor = new RadareExtractor(bin_path);
     }
     BIN_ARCH extract_architecture();
@@ -37,6 +37,7 @@ public:
     virtual void post_matching() = 0;
     size_t get_matches_sz();
     void demangle_functions();
+    virtual bool write_output(std::string output_path) = 0;
     bool is_stripped() {
         return this->stripped;
     }

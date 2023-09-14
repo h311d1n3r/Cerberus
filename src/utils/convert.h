@@ -22,6 +22,8 @@ std::string strip(const std::string& str);
 
 bool ends_with(std::string const& value, std::string const& ending);
 
-std::string demangle_function_name(const std::string& mangled_name);
+void replace_all(std::string& str, const std::string& from, const std::string& to);
+
+std::string demangle_function_name(std::string& mangled_name);
 
 #endif //CERBERUS_CONVERT_H

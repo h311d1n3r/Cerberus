@@ -17,3 +17,7 @@ void PeHandler::functions_matching(string lib_path) {
 void PeHandler::post_matching() {
 
 }
+
+bool PeHandler::write_output(string output_path) {
+
+}

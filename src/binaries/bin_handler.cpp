@@ -5,7 +5,6 @@
 #include <langs/lib_regex.h>
 #include <utils/search.h>
 #include <utils/convert.h>
-#include <fstream>
 
 using namespace std;
 
@@ -77,5 +76,7 @@ size_t BinaryHandler::get_matches_sz() {
 }
 
 void BinaryHandler::demangle_functions() {
-    for(unique_ptr<FUNCTION>& func : this->functions) func->name = demangle_function_name(func->name);
+    for(unique_ptr<FUNCTION>& func : this->functions) {
+        if(func->name.size()) func->name = demangle_function_name(func->name);
+    }
 }

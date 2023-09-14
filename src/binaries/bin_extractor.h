@@ -12,7 +12,7 @@ protected:
 public:
     BinaryExtractor(std::string bin_path) : bin_path(bin_path) {};
     virtual BIN_ARCH extract_arch() = 0;
-    virtual std::vector<std::unique_ptr<FUNCTION>> extract_functions() = 0;
+    virtual std::vector<std::unique_ptr<FUNCTION>> extract_functions(BIN_ARCH arch) = 0;
     virtual std::vector<std::unique_ptr<SECTION>> extract_sections() = 0;
 };
 
