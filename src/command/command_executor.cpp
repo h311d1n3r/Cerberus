@@ -4,6 +4,12 @@
 
 using namespace std;
 
+bool CommandExecutor::test_password(std::string password) {
+    COMMAND_RESULT res;
+    this->execute_command("echo "+password+" | sudo -Sk echo test", &res);
+    return !res.code;
+}
+
 void CommandExecutor::execute_command(string command, COMMAND_RESULT* result) {
     char current_dir[1024];
     getcwd(current_dir, sizeof(current_dir));

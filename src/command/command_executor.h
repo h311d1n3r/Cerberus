@@ -15,6 +15,7 @@ private:
     std::string env_dir;
 public:
     CommandExecutor(std::string env_dir) : env_dir(std::filesystem::absolute(env_dir)) {};
+    bool test_password(std::string password);
     void execute_command(std::string command, COMMAND_RESULT* result);
 };
 

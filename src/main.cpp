@@ -86,7 +86,13 @@ bool install_dependencies(BinaryHandler* handler) {
                 bool agrees_install = ask_yes_no("Proceed to installation ?", true);
                 if(agrees_install) {
                     if(!usr_config->is_root) {
-                        string password = ask_password("$(info)Input your password for sudo");
+                        CommandExecutor executor("./");
+                        string password;
+                        while(true) {
+                            password = ask_password("$(info)Input your password for sudo");
+                            if(executor.test_password(password)) break;
+                            fcout << "$(warning)Wrong password ! Try again..." << endl;
+                        }
                         dep_manager.set_password(password);
                     }
                     for(OS_PACKAGE* package : os_packages) {
