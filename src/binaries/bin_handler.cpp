@@ -32,7 +32,7 @@ size_t BinaryHandler::libs_extraction() {
     char data[bin_file_sz];
     bin_file.read(data, bin_file_sz);
     for(string reg : lib_regex) {
-        vector<string> matches = search_regex(data, bin_file_sz, reg);
+        vector<string> matches = search_regex(data, bin_file_sz, reg, 256);
         for(string match : matches) {
             unique_ptr<LIBRARY> lib = lib_extract_callbacks[lang](match);
             if(lib) {

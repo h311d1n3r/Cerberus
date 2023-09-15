@@ -28,7 +28,9 @@ vector<PACKAGE*> packages = {
     new OS_PACKAGE{"git", "git"},
     new OS_PACKAGE{"cargo", "cargo"},
     new OS_PACKAGE{"binutils", "c++filt"},
+    new OS_PACKAGE{"pyinstaller", "pyinstaller"},
     new GIT_PACKAGE{"radare2", "radare2", "https://github.com/radareorg/radare2", 0, "cd .. ; mv radare2 ../ ; ../radare2/sys/install.sh", false},
+    new GIT_PACKAGE{"Goliath", "goliath", "https://github.com/h311d1n3r/Goliath", 0, "cd .. ; mv Goliath ../ ; ../Goliath/build.sh", false},
     new CUSTOM_PACKAGE{"rust", "rustup", "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs > rust_install.sh ; sh +x rust_install.sh -y ; rm rust_install.sh"}
 };
 
@@ -242,7 +244,7 @@ int main(int argc, char *argv[]) {
             fcout << "$(info)Identified language : $(magenta:b)" << name_from_lang[langs.at(0).first] << endl;
             bool agree_lang = ask_yes_no("Continue analysis with this language ?", true);
             if(agree_lang) selected_lang = langs.at(0).first;
-        }
+        } else fcout << "$(warning)Couldn't identify language automatically..." << endl;
         if(selected_lang == LANG::UNKNOWN_LANG) {
             fcout << "$(info)Currently supported languages :\n";
             for(size_t lang_i = 0; lang_i < langs.size(); lang_i++) {

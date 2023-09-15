@@ -31,6 +31,12 @@ unique_ptr<LIBRARY> rust_extract_callback(string match) {
 }
 
 unique_ptr<LIBRARY> go_extract_callback(string match) {
+    size_t null_term_index;
+    if((null_term_index = match.find('\x00')) != string::npos) {
+        match = match.substr(0, null_term_index);
+    }
+    vector<string> match_parts = split_string(match, '/');
+
     return nullptr;
 }
 

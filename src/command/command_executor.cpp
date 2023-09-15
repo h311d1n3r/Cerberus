@@ -1,6 +1,7 @@
 #include <command/command_executor.h>
 #include <unistd.h>
 #include <cstring>
+#include <iostream>
 
 using namespace std;
 
@@ -28,6 +29,7 @@ void CommandExecutor::execute_command(string command, COMMAND_RESULT* result) {
     stringstream ss;
     char buffer[128];
     while (fgets(buffer, sizeof(buffer), pipe) != nullptr) ss << string(buffer, strlen(buffer));
+    cout << ss.str() << endl;
     result->code = pclose(pipe);
     result->response = ss.str();
     chdir(current_dir);

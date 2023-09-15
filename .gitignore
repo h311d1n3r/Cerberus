@@ -3,3 +3,4 @@ cmake-build*/
 build/
 .idea/
 radare2/
+Goliath/
