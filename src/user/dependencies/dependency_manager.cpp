@@ -53,10 +53,17 @@ bool DependencyManager::install_package(GIT_PACKAGE* package) {
     if(res.code != 0) return false;
     string build_cmd = "mkdir build; cd build; cmake ..; make; make install";
     if(package->custom_command.size()) build_cmd = package->custom_command;
-    if(!config->is_root) build_cmd = string("echo ")+password+string(" | sudo -S sh -c \"unset SUDO_USER ; ") + build_cmd + string("\"");
+    if(!config->is_root && package->needs_root) build_cmd = string("echo ")+password+string(" | sudo -S sh -c \"unset SUDO_USER ; ") + build_cmd + string("\"");
     executor.execute_command(string("cd ")+package->repo_name+string("; ")+build_cmd, &res);
     if(package->remove_dir) filesystem::remove_all(work_dir+string("/")+package->repo_name);
     return res.code == package->success_code;
+}
+
+bool DependencyManager::install_package(PIP3_PACKAGE *package) {
+    fcout << "$(info)Installing $(info:b)" << package->package_name << "$..." << endl;
+    COMMAND_RESULT res;
+    executor.execute_command(string("pip3 install ")+package->package_name, &res);
+    return !res.code;
 }
 
 bool DependencyManager::install_package(CUSTOM_PACKAGE *package) {

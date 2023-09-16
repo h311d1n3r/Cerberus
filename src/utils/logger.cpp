@@ -27,6 +27,7 @@ map<string, uint8_t> LOG_COLORS = {
 map<string, pair<uint8_t, uint8_t>> LOG_LEVELS = {
     {"success", pair(32, '+')},
     {"info", pair(36, '*')},
+    {"debug", pair(34, '~')},
     {"warning", pair(33, '#')},
     {"error", pair(35, '?')},
     {"critical", pair(31, '!')}

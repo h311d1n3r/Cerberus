@@ -13,9 +13,10 @@ private:
 public:
     LiefExtractor(std::string bin_path, bool is_elf);
     BIN_ARCH extract_arch() override;
-    std::vector<std::unique_ptr<FUNCTION>> extract_functions(BIN_ARCH arch) override;
+    size_t extract_image_base();
+    std::vector<std::unique_ptr<FUNCTION>> extract_functions(BIN_ARCH arch, size_t image_base) override;
     std::vector<std::unique_ptr<SECTION>> extract_sections() override;
-    bool write_elf_output(std::string output_path, std::vector<std::unique_ptr<FUNCTION>>& funcs, bool stripped);
+    bool write_elf_output(std::string output_path, size_t image_base, std::vector<std::unique_ptr<FUNCTION>>& funcs, bool stripped);
 };
 
 #endif //CERBERUS_LIEF_EXTRACTOR_H

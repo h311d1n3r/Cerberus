@@ -8,7 +8,7 @@ BIN_ARCH RadareExtractor::extract_arch() {
 
 }
 
-vector<unique_ptr<FUNCTION>> RadareExtractor::extract_functions(BIN_ARCH arch) {
+vector<unique_ptr<FUNCTION>> RadareExtractor::extract_functions(BIN_ARCH arch, size_t image_base) {
     vector<unique_ptr<FUNCTION>> funcs;
     COMMAND_RESULT res;
     executor.execute_command(string("radare2 -q -c aaa -c afl \"") + bin_path + string("\""), &res);
@@ -19,7 +19,7 @@ vector<unique_ptr<FUNCTION>> RadareExtractor::extract_functions(BIN_ARCH arch) {
             vector<string> vals = split_string(line, ' ');
             vals = filter_empty_strings(vals);
             unique_ptr<FUNCTION> func = make_unique<FUNCTION>();
-            func->start = stoull(vals[0].substr(2), nullptr, 16);
+            func->start = stoull(vals[0].substr(2), nullptr, 16) - image_base;
             func->end = func->start + stoull(vals[2]) - 1;
             func->name = vals[3];
             funcs.push_back(move(func));

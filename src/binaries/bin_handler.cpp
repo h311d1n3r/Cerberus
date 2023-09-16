@@ -5,12 +5,17 @@
 #include <langs/lib_regex.h>
 #include <utils/search.h>
 #include <utils/convert.h>
+#include <utils/logger.h>
 
 using namespace std;
 
 BIN_ARCH BinaryHandler::extract_architecture() {
     this->arch = lief_extractor->extract_arch();
     return this->arch;
+}
+
+void BinaryHandler::extract_image_base() {
+    this->image_base = lief_extractor->extract_image_base();
 }
 
 size_t BinaryHandler::libs_extraction() {
@@ -47,6 +52,9 @@ size_t BinaryHandler::libs_extraction() {
             }
         }
     }
+    sort(this->libs.begin(), this->libs.end(), [](const unique_ptr<LIBRARY>& a, const unique_ptr<LIBRARY>& b) {
+        return a->name < b->name;
+    });
     bin_file.close();
     return this->libs.size();
 }
@@ -59,13 +67,20 @@ size_t BinaryHandler::libs_installation() {
             break;
         case GO:
             installer = make_unique<GoLibInstaller>(this->work_dir, this->arch);
+            break;
         default:
             return 0;
     }
+    if(!installer->pre_install_hook(this->libs)) return 0;
     size_t success_ctr = 0;
     for(std::unique_ptr<LIBRARY>& lib : this->libs) {
-        if(installer->install_lib(*lib.get())) success_ctr++;
+        fcout << "$(info)Installing $(bright_magenta:b)" << lib->name << "$$(red):$$(magenta:b)" << lib->version << "$..." << endl;
+        if(installer->install_lib(*lib.get())) {
+            success_ctr++;
+            fcout << "$(success)Success !" << endl;
+        } else fcout << "$(error)Failure..." << endl;
     }
+    if(!installer->post_install_hook()) return 0;
     return success_ctr;
 }
 

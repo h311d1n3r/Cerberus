@@ -1,6 +1,5 @@
 #include <binaries/extractors/lief_extractor.h>
 #include <utils/convert.h>
-#include <iostream>
 
 using namespace std;
 
@@ -19,7 +18,11 @@ BIN_ARCH LiefExtractor::extract_arch() {
     return BIN_ARCH::UNKNOWN_ARCH;
 }
 
-vector<unique_ptr<FUNCTION>> LiefExtractor::extract_functions(BIN_ARCH arch) {
+size_t LiefExtractor::extract_image_base() {
+    return this->bin->imagebase();
+}
+
+vector<unique_ptr<FUNCTION>> LiefExtractor::extract_functions(BIN_ARCH arch, size_t image_base) {
     vector<unique_ptr<FUNCTION>> funcs;
     vector<LIEF::Function> lief_funcs;
     if(is_elf) lief_funcs = this->elf_bin->functions();
@@ -27,8 +30,8 @@ vector<unique_ptr<FUNCTION>> LiefExtractor::extract_functions(BIN_ARCH arch) {
     for(LIEF::Function lief_func : lief_funcs) {
         if(!lief_func.size()) continue;
         unique_ptr<FUNCTION> func = make_unique<FUNCTION>();
-        func->start = lief_func.address();
-        func->end = lief_func.address() + lief_func.size();
+        func->start = lief_func.address() - image_base;
+        func->end = func->start + lief_func.size() - 1;
         func->name = lief_func.name();
         funcs.push_back(move(func));
     }
@@ -47,7 +50,7 @@ vector<unique_ptr<SECTION>> LiefExtractor::extract_sections() {
     return sections;
 }
 
-bool LiefExtractor::write_elf_output(string output_path, vector<unique_ptr<FUNCTION>>& funcs, bool stripped) {
+bool LiefExtractor::write_elf_output(string output_path, size_t image_base, vector<unique_ptr<FUNCTION>>& funcs, bool stripped) {
     if(!this->elf_bin->has_section(".symtab")) {
         LIEF::ELF::Section symtab_sec = LIEF::ELF::Section();
         symtab_sec.name(".symtab");
@@ -90,7 +93,7 @@ bool LiefExtractor::write_elf_output(string output_path, vector<unique_ptr<FUNCT
             LIEF::ELF::Symbol symbol = LIEF::ELF::Symbol();
             symbol.name(func->name);
             symbol.type(LIEF::ELF::ELF_SYMBOL_TYPES::STT_FUNC);
-            symbol.value(func->start);
+            symbol.value(func->start+image_base);
             symbol.binding(LIEF::ELF::SYMBOL_BINDINGS::STB_LOCAL);
             symbol.shndx(14);
             this->elf_bin->add_static_symbol(symbol);

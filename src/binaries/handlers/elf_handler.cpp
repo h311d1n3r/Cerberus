@@ -17,9 +17,9 @@ void ElfHandler::strip_analysis() {
 }
 
 size_t ElfHandler::functions_analysis() {
-    vector<unique_ptr<FUNCTION>> funcs = this->lief_extractor->extract_functions(this->arch);
-    if(!funcs.size()) funcs = this->radare_extractor->extract_functions(this->arch);
-    if(!funcs.size()) funcs = this->libelf_extractor->extract_functions(this->arch);
+    vector<unique_ptr<FUNCTION>> funcs = this->lief_extractor->extract_functions(this->arch, this->image_base);
+    if(!funcs.size()) funcs = this->radare_extractor->extract_functions(this->arch, this->image_base);
+    if(!funcs.size()) funcs = this->libelf_extractor->extract_functions(this->arch, this->image_base);
     algorithm->process_binary(&funcs);
     this->functions = move(funcs);
     return this->functions.size();
@@ -29,9 +29,10 @@ void ElfHandler::functions_matching(string lib_path) {
     LiefExtractor lib_lief_extractor(lib_path, true);
     LibelfExtractor lib_libelf_extractor(lib_path);
     RadareExtractor lib_radare_extractor(lib_path);
-    vector<unique_ptr<FUNCTION>> funcs = lib_lief_extractor.extract_functions(this->arch);
-    if(!funcs.size()) funcs = lib_libelf_extractor.extract_functions(this->arch);
-    if(!funcs.size()) funcs = lib_radare_extractor.extract_functions(this->arch);
+    size_t lib_image_base = lib_lief_extractor.extract_image_base();
+    vector<unique_ptr<FUNCTION>> funcs = lib_lief_extractor.extract_functions(this->arch, lib_image_base);
+    if(!funcs.size()) funcs = lib_libelf_extractor.extract_functions(this->arch, lib_image_base);
+    if(!funcs.size()) funcs = lib_radare_extractor.extract_functions(this->arch, lib_image_base);
     algorithm->process_lib(lib_path, &funcs);
 }
 
@@ -40,5 +41,5 @@ void ElfHandler::post_matching() {
 }
 
 bool ElfHandler::write_output(string output_path) {
-    return this->lief_extractor->write_elf_output(output_path, this->functions, this->stripped);
+    return this->lief_extractor->write_elf_output(output_path, this->image_base, this->functions, this->stripped);
 }

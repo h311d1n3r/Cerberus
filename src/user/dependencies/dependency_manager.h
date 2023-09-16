@@ -26,6 +26,7 @@ struct GIT_PACKAGE : PACKAGE {
     std::string custom_command = "";
     std::int32_t success_code = 0;
     bool remove_dir = true;
+    bool needs_root = true;
     GIT_PACKAGE(std::string repo_name, std::string binary, std::string url) {
         package_type = 1;
         PACKAGE::binary = binary;
@@ -41,6 +42,18 @@ struct GIT_PACKAGE : PACKAGE {
     GIT_PACKAGE(std::string repo_name, std::string binary, std::string url, int32_t success_code, std::string custom_command, bool remove_dir) : GIT_PACKAGE(repo_name, binary, url, success_code, custom_command) {
         GIT_PACKAGE::remove_dir = remove_dir;
     }
+    GIT_PACKAGE(std::string repo_name, std::string binary, std::string url, int32_t success_code, std::string custom_command, bool remove_dir, bool needs_root) : GIT_PACKAGE(repo_name, binary, url, success_code, custom_command, remove_dir) {
+        GIT_PACKAGE::needs_root = needs_root;
+    }
+};
+
+struct PIP3_PACKAGE : PACKAGE {
+    std::string package_name;
+    PIP3_PACKAGE(std::string binary, std::string package_name) {
+        PACKAGE::package_type = 2;
+        PACKAGE::binary = binary;
+        PIP3_PACKAGE::package_name = package_name;
+    }
 };
 
 struct CUSTOM_PACKAGE : PACKAGE {
@@ -48,7 +61,7 @@ struct CUSTOM_PACKAGE : PACKAGE {
     std::string command;
     int32_t success_code = 0;
     CUSTOM_PACKAGE(std::string package_name, std::string binary, std::string command) {
-        PACKAGE::package_type = 2;
+        PACKAGE::package_type = 3;
         PACKAGE::binary = binary;
         CUSTOM_PACKAGE::package_name = package_name;
         CUSTOM_PACKAGE::command = command;
@@ -72,6 +85,7 @@ public:
     bool is_package_installed(PACKAGE* package);
     bool install_package(OS_PACKAGE* package);
     bool install_package(GIT_PACKAGE* package);
+    bool install_package(PIP3_PACKAGE* package);
     bool install_package(CUSTOM_PACKAGE* package);
 };
 

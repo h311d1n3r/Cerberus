@@ -5,6 +5,8 @@
 #include <string>
 #include <filesystem>
 
+extern bool COMMANDS_DEBUG_MODE;
+
 struct COMMAND_RESULT {
     int32_t code;
     std::string response;

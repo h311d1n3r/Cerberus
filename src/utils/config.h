@@ -9,6 +9,7 @@ struct CONFIG {
     uint16_t part_hash_len = 20;
     float part_hash_trust = 0.6;
     uint16_t min_func_size = 10;
+    bool debug = false;
     bool no_prompt = false;
 };
 

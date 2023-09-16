@@ -18,6 +18,7 @@ protected:
     LANG lang;
     Algorithm* algorithm;
     BIN_ARCH arch;
+    size_t image_base;
     bool stripped;
     std::vector<std::unique_ptr<LIBRARY>> libs;
     std::vector<std::unique_ptr<FUNCTION>> functions;
@@ -29,6 +30,7 @@ public:
         this->radare_extractor = new RadareExtractor(bin_path);
     }
     BIN_ARCH extract_architecture();
+    void extract_image_base();
     virtual void strip_analysis() = 0;
     size_t libs_extraction();
     size_t libs_installation();

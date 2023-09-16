@@ -19,6 +19,7 @@ string ArgParser::format_help() {
     res += "   $(red:b)min_func_size (mfs)$ -> Specifies the minimum length a function must be to get analyzed. Decreasing this value will increase matches but also false positives. $(cyan:b)Default value : 10$\n\n";
     res += "$(cyan:b)Flags:$\n";
     res += "   $(red:b)help (h)$ -> Displays this message.\n";
+    res += "   $(red:b)debug (h)$ -> Displays outputs of commands.\n";
     res += "   $(red:b)no-prompt (np)$ -> Automatically skips user prompts.";
     return res;
 }
@@ -30,12 +31,13 @@ void ArgParser::prepare_args() {
     this->parser.add_argument("-part_hash_trust", "-pht");
     this->parser.add_argument("-min_func_size", "-mfs");
     this->parser.add_argument("--help", "--h").implicit_value(true);
+    this->parser.add_argument("--debug", "--dbg").implicit_value(true);
     this->parser.add_argument("--no-prompt", "--np").implicit_value(true);
 }
 
 CONFIG* ArgParser::compute_args(int argc, char **argv) {
     CONFIG* config = new CONFIG;
-    if(argc <= 2) {
+    if(argc >= 2) {
         this->parser.parse_args(argc, argv);
         config->binary_path = this->parser.get<string>("binary");
         config->output_path = this->parser.is_used("-output") ? this->parser.get<string>("output") :
@@ -44,9 +46,10 @@ CONFIG* ArgParser::compute_args(int argc, char **argv) {
         if (this->parser.is_used("-part_hash_trust"))
             config->part_hash_trust = this->parser.get<float>("part_hash_trust");
         if (this->parser.is_used("-min_func_size")) config->min_func_size = this->parser.get<uint16_t>("min_func_size");
+        if (this->parser.is_used("--debug")) config->debug = true;
         if (this->parser.is_used("--no-prompt")) config->no_prompt = true;
     }
-    if(argc > 2 || this->parser.is_used("--help") || !config->binary_path.length()) {
+    if(argc < 2 || this->parser.is_used("--help") || !config->binary_path.length()) {
         string help = this->format_help();
         fcout << help << endl;
         exit(0);

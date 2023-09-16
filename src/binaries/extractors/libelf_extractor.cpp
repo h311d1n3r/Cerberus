@@ -19,7 +19,7 @@ BIN_ARCH LibelfExtractor::extract_arch() {
 
 }
 
-vector<unique_ptr<FUNCTION>> LibelfExtractor::extract_functions_32() {
+vector<unique_ptr<FUNCTION>> LibelfExtractor::extract_functions_32(size_t image_base) {
     vector<unique_ptr<FUNCTION>> funcs;
     Elf_Scn *scn = nullptr;
     Elf_Scn *sym_scn = nullptr;
@@ -47,14 +47,14 @@ vector<unique_ptr<FUNCTION>> LibelfExtractor::extract_functions_32() {
         for (size_t i = 0; i < sym_count; i++) {
             if(ELF32_ST_TYPE(symtab[i].st_info) != STT_FUNC || !symtab[i].st_size) continue;
             unique_ptr<FUNCTION> func = make_unique<FUNCTION>();
-            func->start = symtab[i].st_value;
+            func->start = symtab[i].st_value - image_base;
             func->end = func->start + symtab[i].st_size - 1;
             if(!str_scn_start || !symtab[i].st_value) {
                 funcs.push_back(move(func));
                 continue;
             }
             char buf[1024];
-            fseek(this->fp, symtab[i].st_name+str_scn_start, SEEK_SET);
+            fseek(this->fp, symtab[i].st_name-image_base+str_scn_start, SEEK_SET);
             fread(buf, 1024, 1, this->fp);
             func->name = string(buf);
             funcs.push_back(move(func));
@@ -63,7 +63,7 @@ vector<unique_ptr<FUNCTION>> LibelfExtractor::extract_functions_32() {
     return funcs;
 }
 
-vector<unique_ptr<FUNCTION>> LibelfExtractor::extract_functions_64() {
+vector<unique_ptr<FUNCTION>> LibelfExtractor::extract_functions_64(size_t image_base) {
     vector<unique_ptr<FUNCTION>> funcs;
     Elf_Scn *scn = nullptr;
     Elf_Scn *sym_scn = nullptr;
@@ -91,14 +91,14 @@ vector<unique_ptr<FUNCTION>> LibelfExtractor::extract_functions_64() {
         for (size_t i = 0; i < sym_count; i++) {
             if(ELF64_ST_TYPE(symtab[i].st_info) != STT_FUNC || !symtab[i].st_size) continue;
             unique_ptr<FUNCTION> func = make_unique<FUNCTION>();
-            func->start = symtab[i].st_value;
+            func->start = symtab[i].st_value - image_base;
             func->end = func->start + symtab[i].st_size - 1;
             if(!str_scn_start || !symtab[i].st_value) {
                 funcs.push_back(move(func));
                 continue;
             }
             char buf[1024];
-            fseek(this->fp, symtab[i].st_name+str_scn_start, SEEK_SET);
+            fseek(this->fp, symtab[i].st_name-image_base+str_scn_start, SEEK_SET);
             fread(buf, 1024, 1, this->fp);
             func->name = string(buf);
             funcs.push_back(move(func));
@@ -107,14 +107,14 @@ vector<unique_ptr<FUNCTION>> LibelfExtractor::extract_functions_64() {
     return funcs;
 }
 
-vector<unique_ptr<FUNCTION>> LibelfExtractor::extract_functions(BIN_ARCH arch) {
+vector<unique_ptr<FUNCTION>> LibelfExtractor::extract_functions(BIN_ARCH arch, size_t image_base) {
     vector<unique_ptr<FUNCTION>> funcs;
     switch(arch) {
         case BIN_ARCH::X86_64:
-            funcs = extract_functions_64();
+            funcs = extract_functions_64(image_base);
             break;
         case BIN_ARCH::X86:
-            funcs = extract_functions_32();
+            funcs = extract_functions_32(image_base);
             break;
     }
     return funcs;

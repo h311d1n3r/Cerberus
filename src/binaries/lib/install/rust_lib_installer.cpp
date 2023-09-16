@@ -144,29 +144,16 @@ RustLibInstaller::RustLibInstaller(string work_dir, BIN_ARCH arch) : LibInstalle
 }
 
 bool RustLibInstaller::install_lib(LIBRARY lib) {
-    fcout << "$(info)Installing $(bright_magenta:b)" << lib.name << "$$(red):$$(magenta:b)" << lib.version << "$..." << endl;
     string output_dir_name = this->work_dir+"/"+lib.name+"-"+lib.version;
     string zip_file_name = output_dir_name+".crate";
     string tar_file_name = output_dir_name+".tar";
-    if(!this->downloader.download_file("https://crates.io/api/v1/crates/"+lib.name+"/"+lib.version+"/download", zip_file_name)) {
-        fcout << "$(error)Failure..." << endl;
-        return false;
-    }
-    if(!decompress_gzip_file(zip_file_name, tar_file_name)) {
-        fcout << "$(error)Failure..." << endl;
-        return false;
-    }
+    if(!this->downloader.download_file("https://crates.io/api/v1/crates/"+lib.name+"/"+lib.version+"/download", zip_file_name)) return false;
+    if(!decompress_gzip_file(zip_file_name, tar_file_name)) return false;
     fs::remove(zip_file_name);
-    if(!decompress_tar_file(tar_file_name, output_dir_name)) {
-        fcout << "$(error)Failure..." << endl;
-        return false;
-    }
+    if(!decompress_tar_file(tar_file_name, output_dir_name)) return false;
     fs::remove(tar_file_name);
     ifstream cargo_toml_input(output_dir_name+"/Cargo.toml");
-    if(!cargo_toml_input.is_open()) {
-        fcout << "$(error)Failure..." << endl;
-        return false;
-    }
+    if(!cargo_toml_input.is_open()) return false;
     vector<string> cargo_toml_lines;
     string line;
     bool found_lib = false;
@@ -183,10 +170,7 @@ bool RustLibInstaller::install_lib(LIBRARY lib) {
         cargo_toml_lines.push_back("[lib]");
         cargo_toml_lines.push_back("crate-type = [\"dylib\"]");
     }
-    if(!fs::exists(output_dir_name+"/Cargo.toml")) {
-        fcout << "$(error)Failure..." << endl;
-        return false;
-    }
+    if(!fs::exists(output_dir_name+"/Cargo.toml")) return false;
     ofstream cargo_toml_output(output_dir_name+"/Cargo.toml");
     for(string line : cargo_toml_lines) cargo_toml_output.write((line+string("\n")).c_str(), line.size()+1);
     cargo_toml_output.close();
@@ -200,11 +184,7 @@ bool RustLibInstaller::install_lib(LIBRARY lib) {
         fcout << "$(warning)An error occurred during build, delegating to $(warning:b)RBF$ (Rust Build Fixer)..." << endl;
         success = RustBuildFixer(output_dir_name).process_error(command, res.response);
     }
-    if(success) fcout << "$(success)Success !" << endl;
-    else {
-        fcout << "$(error)Failure..." << endl;
-        return false;
-    }
+    if(!success) return false;
     string release_dir = output_dir_name+string("/target/release");
     if(fs::exists(release_dir)) {
         for (const auto& entry : fs::directory_iterator(release_dir)) {

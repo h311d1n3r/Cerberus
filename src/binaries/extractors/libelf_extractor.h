@@ -13,9 +13,9 @@ public:
     LibelfExtractor(std::string bin_path);
     ~LibelfExtractor();
     BIN_ARCH extract_arch() override;
-    std::vector<std::unique_ptr<FUNCTION>> extract_functions_32();
-    std::vector<std::unique_ptr<FUNCTION>> extract_functions_64();
-    std::vector<std::unique_ptr<FUNCTION>> extract_functions(BIN_ARCH arch) override;
+    std::vector<std::unique_ptr<FUNCTION>> extract_functions_32(size_t image_base);
+    std::vector<std::unique_ptr<FUNCTION>> extract_functions_64(size_t image_base);
+    std::vector<std::unique_ptr<FUNCTION>> extract_functions(BIN_ARCH arch, size_t image_base) override;
     std::vector<std::unique_ptr<SECTION>> extract_sections() override;
 };
 
