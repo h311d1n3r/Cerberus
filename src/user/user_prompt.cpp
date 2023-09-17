@@ -7,7 +7,10 @@
 
 using namespace std;
 
+bool NO_PROMPT = false;
+
 bool ask_yes_no(string question, bool should_yes) {
+    if(NO_PROMPT) return should_yes;
     fcout << "$(info)" << question << " (" << (should_yes?"Y":"y") << "/" << (should_yes?"n":"N") << ") $";
     string response;
     getline(cin, response);
@@ -22,6 +25,7 @@ bool ask_yes_no(string question, bool should_yes) {
 }
 
 uint8_t ask_n(string question, uint8_t min, uint8_t max) {
+    if(NO_PROMPT) return min;
     fcout << "$(info)" << question << " (" << to_string(min) << "-" << to_string(max) << ") $";
     string response;
     uint8_t response_i = max + 1;

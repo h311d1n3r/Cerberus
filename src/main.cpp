@@ -249,6 +249,7 @@ int main(int argc, char *argv[]) {
     ArgParser parser;
     config = parser.compute_args(argc, argv);
     COMMANDS_DEBUG_MODE = config->debug;
+    NO_PROMPT = config->no_prompt;
     if(config) {
         fcout << "$(bright_red:b)---------- $(red:b)" << TOOL_NAME << " (v" << TOOL_VERSION << ")$ ----------" << endl;
         usr_config = identify_local_config();
