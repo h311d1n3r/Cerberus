@@ -65,12 +65,23 @@ struct CARGO_PACKAGE : PACKAGE {
     }
 };
 
+struct GO_PACKAGE : PACKAGE {
+    std::string package_name;
+    std::string url;
+    GO_PACKAGE(std::string binary, std::string package_name, std::string url) {
+        PACKAGE::package_type = 4;
+        PACKAGE::binary = binary;
+        GO_PACKAGE::package_name = package_name;
+        GO_PACKAGE::url = url;
+    }
+};
+
 struct CUSTOM_PACKAGE : PACKAGE {
     std::string package_name;
     std::string command;
     int32_t success_code = 0;
     CUSTOM_PACKAGE(std::string package_name, std::string binary, std::string command) {
-        PACKAGE::package_type = 4;
+        PACKAGE::package_type = 5;
         PACKAGE::binary = binary;
         CUSTOM_PACKAGE::package_name = package_name;
         CUSTOM_PACKAGE::command = command;
@@ -96,6 +107,7 @@ public:
     bool install_package(GIT_PACKAGE* package);
     bool install_package(PIP3_PACKAGE* package);
     bool install_package(CARGO_PACKAGE* package);
+    bool install_package(GO_PACKAGE* package);
     bool install_package(CUSTOM_PACKAGE* package);
 };
 

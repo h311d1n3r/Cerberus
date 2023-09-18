@@ -27,6 +27,7 @@ LOCAL_CONFIG* usr_config;
 vector<PACKAGE*> packages = {
     new OS_PACKAGE{"git", "git"},
     new OS_PACKAGE{"cargo", "cargo"},
+    new OS_PACKAGE{"golang", "go"},
     new OS_PACKAGE{"binutils", "c++filt"},
     new OS_PACKAGE{"python3", "python3"},
     new OS_PACKAGE{"python3-pip", "pip3"},
@@ -40,9 +41,14 @@ vector<PACKAGE*> packages = {
 void global_init() {
     elf_version(EV_CURRENT);
     curl_global_init(CURL_GLOBAL_ALL);
+    string home_dir = string(getenv("HOME"));
     if(fs::exists(install_dir)) fs::create_directories(install_dir);
-    const char* currentPath = getenv("PATH");
-    setenv("PATH", (string(currentPath)+":"+install_dir).c_str(), 1);
+    const char* current_path = getenv("PATH");
+    string new_path = string(current_path)+string(":")+install_dir;
+    const char* go_path = getenv("GOPATH");
+    if(go_path && strlen(go_path)) new_path+=string(":")+string(go_path)+string("/bin");
+    else new_path+=":"+home_dir+"/go/bin";
+    setenv("PATH", new_path.c_str(), 1);
 }
 
 void global_exit() {
@@ -55,6 +61,7 @@ bool install_dependencies(BinaryHandler* handler) {
     std::vector<GIT_PACKAGE*> git_packages;
     std::vector<PIP3_PACKAGE*> pip3_packages;
     std::vector<CARGO_PACKAGE*> cargo_packages;
+    std::vector<GO_PACKAGE*> go_packages;
     std::vector<CUSTOM_PACKAGE*> custom_packages;
     for(PACKAGE* package : packages) {
         if(!dep_manager.is_package_installed(package)) {
@@ -72,12 +79,15 @@ bool install_dependencies(BinaryHandler* handler) {
                     cargo_packages.push_back((CARGO_PACKAGE*) package);
                     break;
                 case 4:
+                    go_packages.push_back((GO_PACKAGE*) package);
+                    break;
+                case 5:
                     custom_packages.push_back((CUSTOM_PACKAGE*) package);
                     break;
             }
         }
     }
-    if(!os_packages.size() && !git_packages.size() && !pip3_packages.size() && !cargo_packages.size() && !custom_packages.size()) fcout << "$(info)No additional package is required." << endl;
+    if(!os_packages.size() && !git_packages.size() && !pip3_packages.size() && !cargo_packages.size() && !go_packages.size() && !custom_packages.size()) fcout << "$(info)No additional package is required." << endl;
     else {
         fcout << "$(info)The following packages are required :" << endl;
         if(os_packages.size()) {
@@ -102,6 +112,12 @@ bool install_dependencies(BinaryHandler* handler) {
             fcout << "$(bright_yellow)With $(bright_yellow:b)cargo$:" << endl;
             for (CARGO_PACKAGE *package : cargo_packages) {
                 fcout << "$(yellow)- $(yellow:b)" + package->package_name << endl;
+            }
+        }
+        if(go_packages.size()) {
+            fcout << "$(bright_white)With $(bright_white:b)go$:" << endl;
+            for (GO_PACKAGE *package : go_packages) {
+                fcout << "$(white)- $(white:b)" + package->package_name << endl;
             }
         }
         if(custom_packages.size()) {
@@ -146,6 +162,13 @@ bool install_dependencies(BinaryHandler* handler) {
                         }
                     }
                     for(CARGO_PACKAGE* package : cargo_packages) {
+                        if(dep_manager.install_package(package)) fcout << "$(success)Done." << endl;
+                        else {
+                            fcout << "$(error)An error occurred during installation..." << endl;
+                            return false;
+                        }
+                    }
+                    for(GO_PACKAGE* package : go_packages) {
                         if(dep_manager.install_package(package)) fcout << "$(success)Done." << endl;
                         else {
                             fcout << "$(error)An error occurred during installation..." << endl;

@@ -27,8 +27,8 @@ size_t ElfHandler::functions_analysis() {
 
 void ElfHandler::functions_matching(string lib_path) {
     LiefExtractor lib_lief_extractor(lib_path, type);
-    LibelfExtractor lib_libelf_extractor(lib_path);
-    RadareExtractor lib_radare_extractor(lib_path);
+    LibelfExtractor lib_libelf_extractor(lib_path, type);
+    RadareExtractor lib_radare_extractor(lib_path, type, lib_lief_extractor);
     size_t lib_image_base = lib_lief_extractor.extract_image_base();
     vector<unique_ptr<FUNCTION>> funcs = lib_lief_extractor.extract_functions(this->arch, lib_image_base);
     if(!funcs.size()) funcs = lib_libelf_extractor.extract_functions(this->arch, lib_image_base);

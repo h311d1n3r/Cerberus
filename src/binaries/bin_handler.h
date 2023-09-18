@@ -29,7 +29,7 @@ protected:
 public:
     BinaryHandler(std::string bin_path, std::string work_dir, LANG lang, Algorithm* algorithm, BIN_TYPE type) : bin_path(bin_path), work_dir(work_dir), lang(lang), algorithm(algorithm), type(type) {
         this->lief_extractor = new LiefExtractor(bin_path, type);
-        this->radare_extractor = new RadareExtractor(bin_path);
+        this->radare_extractor = new RadareExtractor(bin_path, type, *this->lief_extractor);
     }
     BIN_ARCH extract_architecture();
     void extract_image_base();

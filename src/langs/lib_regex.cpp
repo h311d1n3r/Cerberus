@@ -13,6 +13,8 @@ std::vector<std::string> rust_lib_regex = {
 std::vector<std::string> go_lib_regex = {
     "go(.*?)/pkg/mod/(.+?)\\.(s|go)",
     "go(.*?)/src/(.+?)\\.(s|go)",
+    "go(.*?)\\\\pkg\\\\mod/(.+?)\\.(s|go)",
+    "go(.*?)\\\\src\\\\(.+?)\\.(s|go)",
     "go\\d+\\.\\d+\\.\\d+\\x00",
     "go\\d+\\.\\d+\\x00"
 };
@@ -38,14 +40,17 @@ unique_ptr<LIBRARY> go_extract_callback(string match) {
     if((null_term_index = match.find('\x00')) != string::npos) {
         match = match.substr(0, null_term_index);
     }
-    if(match.find("/") == string::npos && match.length() > 2 && isdigit(match.at(2))) {
+    uint8_t mode = 0;
+    if(match.find("/") != string::npos) mode = 1;
+    else if(match.find("\\") != string::npos) mode = 2;
+    if(mode == 0 && match.length() > 2 && isdigit(match.at(2))) {
         unique_ptr<LIBRARY> lib = make_unique<LIBRARY>();
         lib->name = "go";
         lib->version = match.substr(2);
         return lib;
     }
     size_t pkg_index, src_index;
-    if((pkg_index = match.find("/pkg/mod/")) != string::npos) {
+    if((pkg_index = (mode == 1 ? match.find("/pkg/mod/") : match.find("\\pkg\\mod\\"))) != string::npos) {
         size_t version_index = match.find("@");
         if(match.find("golang.org") == string::npos && version_index != string::npos) {
             unique_ptr<LIBRARY> lib = make_unique<LIBRARY>();
@@ -55,11 +60,11 @@ unique_ptr<LIBRARY> go_extract_callback(string match) {
             lib->version = lib->version.substr(0, lib->version.find('/'));
             return lib;
         }
-    } else if((src_index = match.find("/src/")) != string::npos) {
+    } else if((src_index = (mode == 1 ? match.find("/src/") : match.find("\\src\\"))) != string::npos) {
         const string forbidden_list[] = {"internal","runtime","github.com","golang.org"};
         for(string forbidden : forbidden_list) if(match.find(forbidden) != string::npos) return nullptr;
         match = match.substr(src_index+string("/src/").length());
-        match = match.substr(0, match.find_last_of('/'));
+        match = match.substr(0, match.find_last_of(mode == 1 ? '/' : '\\'));
         unique_ptr<LIBRARY> lib = make_unique<LIBRARY>();
         lib->name = "std::" + match;
         lib->version = "unk";

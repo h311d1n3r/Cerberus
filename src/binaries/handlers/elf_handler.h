@@ -8,7 +8,7 @@ private:
     LibelfExtractor* libelf_extractor;
 public:
     ElfHandler(std::string bin_path, std::string work_dir, LANG lang, Algorithm* algorithm) : BinaryHandler(bin_path, work_dir, lang, algorithm, BIN_TYPE::ELF) {
-        this->libelf_extractor = new LibelfExtractor(bin_path);
+        this->libelf_extractor = new LibelfExtractor(bin_path, type);
     }
     void strip_analysis() override;
     size_t functions_analysis() override;

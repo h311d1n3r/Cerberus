@@ -9,8 +9,9 @@
 class BinaryExtractor {
 protected:
     std::string bin_path;
+    BIN_TYPE type;
 public:
-    BinaryExtractor(std::string bin_path) : bin_path(bin_path) {};
+    BinaryExtractor(std::string bin_path, BIN_TYPE type) : bin_path(bin_path), type(type) {};
     virtual BIN_ARCH extract_arch() = 0;
     virtual std::vector<std::unique_ptr<FUNCTION>> extract_functions(BIN_ARCH arch, size_t image_base) = 0;
     virtual std::vector<std::unique_ptr<SECTION>> extract_sections() = 0;

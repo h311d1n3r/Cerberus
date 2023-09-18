@@ -4,7 +4,7 @@
 
 using namespace std;
 
-LibelfExtractor::LibelfExtractor(std::string bin_path) : BinaryExtractor(bin_path) {
+LibelfExtractor::LibelfExtractor(std::string bin_path, BIN_TYPE type) : BinaryExtractor(bin_path, type) {
     this->fd = open(bin_path.c_str(), O_RDONLY, 0);
     this->fp = fdopen(fd, "r");
     this->bin = elf_begin(fd, ELF_C_READ, NULL);
@@ -108,6 +108,7 @@ vector<unique_ptr<FUNCTION>> LibelfExtractor::extract_functions_64(size_t image_
 }
 
 vector<unique_ptr<FUNCTION>> LibelfExtractor::extract_functions(BIN_ARCH arch, size_t image_base) {
+    if(type==BIN_TYPE::PE) image_base = 0;
     vector<unique_ptr<FUNCTION>> funcs;
     switch(arch) {
         case BIN_ARCH::X86_64:

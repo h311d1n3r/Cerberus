@@ -18,6 +18,7 @@ vector<pair<string, LANG>> LANG_PATTERNS = {
     std::pair("\\rustc-", LANG::RUST),
     std::pair("\\.cargo\\", LANG::RUST),
     std::pair("/go-", LANG::GO),
+    std::pair("\\go-", LANG::GO),
     std::pair("runtime.go", LANG::GO)
 };
 

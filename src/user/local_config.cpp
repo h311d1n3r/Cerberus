@@ -1,5 +1,6 @@
 #include <user/local_config.h>
 #include <unistd.h>
+#include <utils/convert.h>
 
 using namespace std;
 
@@ -47,14 +48,10 @@ bool is_binary_on_path(string binary) {
     const char* path_env = std::getenv("PATH");
     if (path_env == nullptr) return false;
     string path_env_str(path_env);
-    size_t start = 0;
-    size_t end = path_env_str.find(':', start);
-    while (end != string::npos) {
-        string path = path_env_str.substr(start, end - start);
+    vector<string> paths = split_string(path_env_str,':');
+    for(string path : paths) {
         string full_path = path + '/' + binary;
         if (access(full_path.c_str(), X_OK) == 0) return true;
-        start = end + 1;
-        end = path_env_str.find(':', start);
     }
     return false;
 }

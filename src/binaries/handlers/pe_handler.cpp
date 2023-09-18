@@ -1,9 +1,11 @@
 #include <binaries/handlers/pe_handler.h>
+#include <binaries/extractors/go_extractor.h>
 
 using namespace std;
 
 void PeHandler::strip_analysis() {
-    this->stripped = !this->extract_section_header_start(".edata", this->bin_path);
+    this->stripped = !this->extract_section_header_start(".edata", this->bin_path) &&
+            !this->extract_section_header_start(".zdebug_info", this->bin_path);
 }
 
 size_t PeHandler::functions_analysis() {
@@ -86,9 +88,11 @@ void PeHandler::fix_functions_names(vector<unique_ptr<FUNCTION>>& funcs, std::st
 
 void PeHandler::functions_matching(string lib_path) {
     LiefExtractor lib_lief_extractor(lib_path, type);
-    RadareExtractor lib_radare_extractor(lib_path);
+    GoExtractor lib_go_extractor(lib_path, type, lib_lief_extractor);
+    RadareExtractor lib_radare_extractor(lib_path, type, lib_lief_extractor);
     size_t lib_image_base = lib_lief_extractor.extract_image_base();
     vector<unique_ptr<FUNCTION>> funcs = lib_lief_extractor.extract_functions(this->arch, lib_image_base);
+    if(!funcs.size()) funcs = lib_go_extractor.extract_functions(this->arch, lib_image_base);
     if(!funcs.size()) funcs = lib_radare_extractor.extract_functions(this->arch, lib_image_base);
     this->fix_functions_names(funcs, lib_path, lib_lief_extractor);
     algorithm->process_lib(lib_path, &funcs);

@@ -6,7 +6,7 @@
 
 using namespace std;
 
-LiefExtractor::LiefExtractor(std::string bin_path, BIN_TYPE type) : BinaryExtractor(bin_path), type(type) {
+LiefExtractor::LiefExtractor(std::string bin_path, BIN_TYPE type) : BinaryExtractor(bin_path, type) {
     this->bin = LIEF::Parser::parse(bin_path);
     switch(type) {
         case BIN_TYPE::ELF:
@@ -33,6 +33,10 @@ size_t LiefExtractor::extract_image_base() {
 
 size_t LiefExtractor::resolve_pe_rva(size_t rva) {
     return this->pe_bin->rva_to_offset(rva);
+}
+
+LIEF::PE::Section* LiefExtractor::extract_text_section() {
+    return this->pe_bin->get_section(".text");
 }
 
 vector<unique_ptr<FUNCTION>> LiefExtractor::extract_functions(BIN_ARCH arch, size_t image_base) {

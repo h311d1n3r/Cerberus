@@ -59,12 +59,32 @@ bool GoLibInstaller::install_lib(LIBRARY lib) {
 
 bool GoLibInstaller::post_install_hook() {
     fcout << "$(info)Building standalone library..." << endl;
+    string goos, goarch;
+    string lib_extension;
+    switch(type) {
+        case BIN_TYPE::ELF:
+            goos = "linux";
+            lib_extension = ".so";
+            break;
+        case BIN_TYPE::PE:
+            goos = "windows";
+            lib_extension = ".dll";
+            break;
+    }
+    switch(arch) {
+        case BIN_ARCH::X86_64:
+            goarch = "amd64";
+            break;
+        case BIN_ARCH::X86:
+            goarch = "386";
+            break;
+    }
     CommandExecutor executor(this->work_dir+"/standalone");
     COMMAND_RESULT res;
-    executor.execute_command("../go build -o ./standalone.so build_mod.go", &res);
+    executor.execute_command("GOOS="+goos+" GOARCH="+goarch+" ../go build -o ./standalone"+lib_extension+" build_mod.go", &res);
     bool success = !res.code;
     if(success) {
-        filesystem::rename(this->work_dir+"/standalone/standalone.so", this->work_dir+"/standalone.so");
+        filesystem::rename(this->work_dir+"/standalone/standalone"+lib_extension, this->work_dir+"/standalone"+lib_extension);
         fcout << "$(success)Success !" << endl;
     }
     else fcout << "$(error)Failure..." << endl;

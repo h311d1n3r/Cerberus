@@ -73,6 +73,13 @@ bool DependencyManager::install_package(CARGO_PACKAGE *package) {
     return !res.code;
 }
 
+bool DependencyManager::install_package(GO_PACKAGE *package) {
+    fcout << "$(info)Installing $(info:b)" << package->package_name << "$..." << endl;
+    COMMAND_RESULT res;
+    executor.execute_command(string("go install ")+package->url+string("@latest"), &res);
+    return !res.code;
+}
+
 bool DependencyManager::install_package(CUSTOM_PACKAGE *package) {
     fcout << "$(info)Installing $(info:b)" << package->package_name << "$..." << endl;
     COMMAND_RESULT res;
