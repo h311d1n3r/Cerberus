@@ -20,6 +20,15 @@ struct OS_PACKAGE : PACKAGE {
     }
 };
 
+struct PIP3_PACKAGE : PACKAGE {
+    std::string package_name;
+    PIP3_PACKAGE(std::string binary, std::string package_name) {
+        PACKAGE::package_type = 1;
+        PACKAGE::binary = binary;
+        PIP3_PACKAGE::package_name = package_name;
+    }
+};
+
 struct GIT_PACKAGE : PACKAGE {
     std::string repo_name;
     std::string url;
@@ -28,7 +37,7 @@ struct GIT_PACKAGE : PACKAGE {
     bool remove_dir = true;
     bool needs_root = true;
     GIT_PACKAGE(std::string repo_name, std::string binary, std::string url) {
-        package_type = 1;
+        package_type = 2;
         PACKAGE::binary = binary;
         GIT_PACKAGE::repo_name = repo_name;
         GIT_PACKAGE::url = url;
@@ -44,15 +53,6 @@ struct GIT_PACKAGE : PACKAGE {
     }
     GIT_PACKAGE(std::string repo_name, std::string binary, std::string url, int32_t success_code, std::string custom_command, bool remove_dir, bool needs_root) : GIT_PACKAGE(repo_name, binary, url, success_code, custom_command, remove_dir) {
         GIT_PACKAGE::needs_root = needs_root;
-    }
-};
-
-struct PIP3_PACKAGE : PACKAGE {
-    std::string package_name;
-    PIP3_PACKAGE(std::string binary, std::string package_name) {
-        PACKAGE::package_type = 2;
-        PACKAGE::binary = binary;
-        PIP3_PACKAGE::package_name = package_name;
     }
 };
 

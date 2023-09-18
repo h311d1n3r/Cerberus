@@ -2,6 +2,7 @@
 #define CERBERUS_CONFIG_H
 
 #include <string>
+#include <cstdint>
 
 struct CONFIG {
     std::string binary_path;

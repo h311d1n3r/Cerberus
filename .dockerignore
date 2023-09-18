@@ -1,0 +1,6 @@
+cmake-build*/
+.cerberus*/
+build/
+.idea/
+radare2/
+Goliath/

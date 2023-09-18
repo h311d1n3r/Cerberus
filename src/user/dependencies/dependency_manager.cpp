@@ -4,19 +4,19 @@
 using namespace std;
 
 map<PACKAGE_MANAGER, string> install_commands = {
-    {PACKAGE_MANAGER::APT, "apt install %s"},
-    {PACKAGE_MANAGER::APT_GET, "apt-get install %s"},
-    {PACKAGE_MANAGER::DNF, "dnf install %s"},
-    {PACKAGE_MANAGER::YUM, "yum install %s"},
-    {PACKAGE_MANAGER::ZYPPER, "zypper install %s"},
-    {PACKAGE_MANAGER::PACMAN, "pacman -S %s"},
-    {PACKAGE_MANAGER::PORTAGE, "emerge %s"},
-    {PACKAGE_MANAGER::SLACKPKG, "slackpkg install %s"},
-    {PACKAGE_MANAGER::SWARET, "swaret --install %s"},
-    {PACKAGE_MANAGER::XBPS, "xbps-install -S %s"},
-    {PACKAGE_MANAGER::APK, "apk add %s"},
-    {PACKAGE_MANAGER::NIX, "nix-env -iA nixpkgs.%s"},
-    {PACKAGE_MANAGER::PETGET, "petget %s.pet"}
+    {PACKAGE_MANAGER::APT, "apt -y install %s"},
+    {PACKAGE_MANAGER::APT_GET, "apt-get -y install %s"},
+    {PACKAGE_MANAGER::DNF, "dnf -y install %s"},
+    {PACKAGE_MANAGER::YUM, "yum -y install %s"},
+    {PACKAGE_MANAGER::ZYPPER, "zypper -y install %s"},
+    {PACKAGE_MANAGER::PACMAN, "pacman -y -S %s"},
+    {PACKAGE_MANAGER::PORTAGE, "emerge -y %s"},
+    {PACKAGE_MANAGER::SLACKPKG, "slackpkg -y install %s"},
+    {PACKAGE_MANAGER::SWARET, "swaret -y --install %s"},
+    {PACKAGE_MANAGER::XBPS, "xbps-install -y -S %s"},
+    {PACKAGE_MANAGER::APK, "apk -y add %s"},
+    {PACKAGE_MANAGER::NIX, "nix-env -y -iA nixpkgs.%s"},
+    {PACKAGE_MANAGER::PETGET, "petget -y %s.pet"}
 };
 
 void DependencyManager::set_password(string password) {
@@ -46,6 +46,13 @@ bool DependencyManager::install_package(OS_PACKAGE* package) {
     return false;
 }
 
+bool DependencyManager::install_package(PIP3_PACKAGE *package) {
+    fcout << "$(info)Installing $(info:b)" << package->package_name << "$..." << endl;
+    COMMAND_RESULT res;
+    executor.execute_command(string("pip3 install ")+package->package_name, &res);
+    return !res.code;
+}
+
 bool DependencyManager::install_package(GIT_PACKAGE* package) {
     fcout << "$(info)Installing $(info:b)" << package->repo_name << "$..." << endl;
     COMMAND_RESULT res;
@@ -57,13 +64,6 @@ bool DependencyManager::install_package(GIT_PACKAGE* package) {
     executor.execute_command(string("cd ")+package->repo_name+string("; ")+build_cmd, &res);
     if(package->remove_dir) filesystem::remove_all(work_dir+string("/")+package->repo_name);
     return res.code == package->success_code;
-}
-
-bool DependencyManager::install_package(PIP3_PACKAGE *package) {
-    fcout << "$(info)Installing $(info:b)" << package->package_name << "$..." << endl;
-    COMMAND_RESULT res;
-    executor.execute_command(string("pip3 install ")+package->package_name, &res);
-    return !res.code;
 }
 
 bool DependencyManager::install_package(CARGO_PACKAGE *package) {

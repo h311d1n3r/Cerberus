@@ -2,6 +2,7 @@
 #define CERBERUS_USER_PROMPT_H
 
 #include <string>
+#include <cstdint>
 
 extern bool NO_PROMPT;
 

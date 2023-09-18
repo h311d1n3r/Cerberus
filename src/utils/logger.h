@@ -4,6 +4,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <cstdint>
 
 extern std::map<std::string, uint8_t> LOG_COLORS;
 extern std::map<std::string, std::pair<uint8_t, uint8_t>> LOG_LEVELS;

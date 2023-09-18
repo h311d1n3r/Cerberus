@@ -31,9 +31,9 @@ vector<PACKAGE*> packages = {
     new OS_PACKAGE{"binutils", "c++filt"},
     new OS_PACKAGE{"python3", "python3"},
     new OS_PACKAGE{"python3-pip", "pip3"},
+    new PIP3_PACKAGE{"pyinstaller", "pyinstaller"},
     new GIT_PACKAGE{"radare2", "radare2", "https://github.com/radareorg/radare2", 0, "cd .. ; mv radare2 ../ ; ../radare2/sys/install.sh", false},
     new GIT_PACKAGE{"Goliath", "goliath", "https://github.com/h311d1n3r/Goliath", 0, "cd .. ; mv Goliath ../ ; cd ../Goliath ; ./build.sh; mv ./dist/goliath "+install_dir, false, false},
-    new PIP3_PACKAGE{"pyinstaller", "pyinstaller"},
     new CARGO_PACKAGE{"cross", "cross"},
     new CUSTOM_PACKAGE{"rust", "rustup", "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs > rust_install.sh ; sh +x rust_install.sh -y ; rm rust_install.sh"}
 };
@@ -70,10 +70,10 @@ bool install_dependencies(BinaryHandler* handler) {
                     os_packages.push_back((OS_PACKAGE*) package);
                     break;
                 case 1:
-                    git_packages.push_back((GIT_PACKAGE*) package);
+                    pip3_packages.push_back((PIP3_PACKAGE*) package);
                     break;
                 case 2:
-                    pip3_packages.push_back((PIP3_PACKAGE*) package);
+                    git_packages.push_back((GIT_PACKAGE*) package);
                     break;
                 case 3:
                     cargo_packages.push_back((CARGO_PACKAGE*) package);
@@ -96,16 +96,16 @@ bool install_dependencies(BinaryHandler* handler) {
                 fcout << "$(magenta)- $(magenta:b)" + package->name << endl;
             }
         }
-        if(git_packages.size()) {
-            fcout << "$(bright_red)With $(bright_red:b)git$:" << endl;
-            for (GIT_PACKAGE *package : git_packages) {
-                fcout << "$(red)- $(red:b)" + package->repo_name << endl;
-            }
-        }
         if(pip3_packages.size()) {
             fcout << "$(bright_blue)With $(bright_blue:b)pip3$:" << endl;
             for (PIP3_PACKAGE *package : pip3_packages) {
                 fcout << "$(blue)- $(blue:b)" + package->package_name << endl;
+            }
+        }
+        if(git_packages.size()) {
+            fcout << "$(bright_red)With $(bright_red:b)git$:" << endl;
+            for (GIT_PACKAGE *package : git_packages) {
+                fcout << "$(red)- $(red:b)" + package->repo_name << endl;
             }
         }
         if(cargo_packages.size()) {
@@ -147,14 +147,14 @@ bool install_dependencies(BinaryHandler* handler) {
                             return false;
                         }
                     }
-                    for(GIT_PACKAGE* package : git_packages) {
+                    for(PIP3_PACKAGE* package : pip3_packages) {
                         if(dep_manager.install_package(package)) fcout << "$(success)Done." << endl;
                         else {
                             fcout << "$(error)An error occurred during installation..." << endl;
                             return false;
                         }
                     }
-                    for(PIP3_PACKAGE* package : pip3_packages) {
+                    for(GIT_PACKAGE* package : git_packages) {
                         if(dep_manager.install_package(package)) fcout << "$(success)Done." << endl;
                         else {
                             fcout << "$(error)An error occurred during installation..." << endl;

@@ -1,6 +1,6 @@
 #include <binaries/extractors/libelf_extractor.h>
 #include <fcntl.h>
-#include <csignal>
+#include <unistd.h>
 
 using namespace std;
 

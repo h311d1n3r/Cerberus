@@ -1,0 +1,17 @@
+FROM fedora:37
+
+WORKDIR /root
+
+RUN dnf -y update
+RUN dnf -y upgrade
+RUN dnf -y install g++ gcc make cmake
+RUN dnf -y install libarchive-devel libcurl-devel zlib-devel elfutils-libelf-devel libuuid-devel
+
+RUN mkdir -p Cerberus
+WORKDIR Cerberus
+ADD ./ ./
+RUN mkdir -p build
+WORKDIR build
+
+RUN cmake ..
+RUN make
