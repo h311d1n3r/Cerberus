@@ -33,7 +33,7 @@ Check the [Releases](https://github.com/h311d1n3r/Cerberus/releases/) tab on the
 1. Clone the repository `git clone https://github.com/h311d1n3r/Cerberus && cd cerberus`.
 2. Check the available Dockerfiles under `Cerberus/docker/{OS}`.  
 3. Build the docker image of your choice `docker build -f ./docker/{OS}/Dockerfile-{version}`.
-4. You can run **Cerberus** from inside the docker or extract the binary on your host. This second choice needs to install the libraries listed in [this section](#install_build_host)  
+4. You can run **Cerberus** from inside the docker or extract the binary on your host. This second choice needs to install the libraries listed in [this section](#install_build_host).  
 
 <a name="install_build_host"/>
 
