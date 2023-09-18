@@ -14,7 +14,7 @@ jobs:
     - name: clone_project
       uses: actions/checkout@v3
     - name: apt_dependencies
-      run: sudo apt install binutils gcc-multilib g++-multilib
+      run: sudo apt -y install libarchive-dev libcurl4-openssl-dev zlib1g-dev libelf-dev gcc g++ make cmake
     - name: setup_radare2
       run: |
         git clone https://github.com/radare/radare2.git
@@ -32,12 +32,10 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: '3.10'
-    - name: python_dependencies
-      run: pip3 install -r requirements.txt
     - name: compile
-      run: ./build.sh
+      run: mkdir build && cmake .. && make
     - name: append_path
-      run: echo "`pwd`/dist" >> $GITHUB_PATH
+      run: echo "`pwd`/build" >> $GITHUB_PATH
     - name: compile_rust_tests
       run: |
         echo "Installing Rust 32-bit architecture"
