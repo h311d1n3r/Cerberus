@@ -139,7 +139,7 @@ void RustLibInstaller::check_and_install_arch(string arch_name) {
     }
 }
 
-RustLibInstaller::RustLibInstaller(string work_dir, BIN_ARCH arch) : LibInstaller(work_dir, arch), downloader() {
+RustLibInstaller::RustLibInstaller(string work_dir, BIN_ARCH arch, BIN_TYPE type) : LibInstaller(work_dir, arch, type), downloader() {
     if(arch == BIN_ARCH::X86) check_and_install_arch("i686-unknown-linux-gnu");
 }
 
@@ -176,22 +176,49 @@ bool RustLibInstaller::install_lib(LIBRARY lib) {
     cargo_toml_output.close();
     CommandExecutor executor(output_dir_name);
     COMMAND_RESULT res;
-    string command = "cargo build --release";
-    if(arch == BIN_ARCH::X86) command += " --target=i686-unknown-linux-gnu";
+    string command;
+    switch(type) {
+        case BIN_TYPE::ELF:
+            command = "cargo build --release";
+            if(arch == BIN_ARCH::X86) command += " --target=i686-unknown-linux-gnu";
+            break;
+        case BIN_TYPE::PE:
+            if(arch == BIN_ARCH::X86_64) command = "cross build --target x86_64-pc-windows-gnu --release";
+            else if(arch == BIN_ARCH::X86) command = "cross build --target i686-pc-windows-gnu --release";
+            break;
+    }
     executor.execute_command(command, &res);
     bool success = res.code == 0;
     if(!success) {
         fcout << "$(warning)An error occurred during build, delegating to $(warning:b)RBF$ (Rust Build Fixer)..." << endl;
-        success = RustBuildFixer(output_dir_name).process_error(command, res.response);
+        success = RustBuildFixer(output_dir_name, type).process_error(command, res.response);
     }
     if(!success) return false;
-    string release_dir = output_dir_name+string("/target/release");
+    string release_dir;
+    switch(type) {
+        case BIN_TYPE::ELF:
+            release_dir = output_dir_name+string("/target/release");
+            break;
+        case BIN_TYPE::PE:
+            if(arch == BIN_ARCH::X86_64) release_dir = output_dir_name+string("/target/x86_64-pc-windows-gnu/release");
+            else if(arch == BIN_ARCH::X86) release_dir = output_dir_name+string("/target/i686-pc-windows-gnu/release");
+            break;
+    }
+    string lib_extension;
+    switch(type) {
+        case BIN_TYPE::ELF:
+            lib_extension = ".so";
+            break;
+        case BIN_TYPE::PE:
+            lib_extension = ".dll";
+            break;
+    }
     if(fs::exists(release_dir)) {
         for (const auto& entry : fs::directory_iterator(release_dir)) {
             if (fs::is_regular_file(entry)) {
                 fs::path file_path = entry.path();
                 string file_name = file_path.filename();
-                if(ends_with(file_name, ".so")) {
+                if(ends_with(file_name, lib_extension)) {
                     fs::rename(file_path, this->work_dir+"/"+file_name);
                 }
             }

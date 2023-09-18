@@ -40,8 +40,17 @@ CONFIG* ArgParser::compute_args(int argc, char **argv) {
     if(argc >= 2) {
         this->parser.parse_args(argc, argv);
         config->binary_path = this->parser.get<string>("binary");
-        config->output_path = this->parser.is_used("-output") ? this->parser.get<string>("output") :
-                              config->binary_path + "-patched";
+        if(this->parser.is_used("-output")) config->output_path = this->parser.get<string>("output");
+        else {
+            size_t extension_idx;
+            string extension = "";
+            if((extension_idx = config->binary_path.find_last_of('.')) != string::npos) {
+                if(config->binary_path.find_last_of('/') < extension_idx && config->binary_path.find_last_of('\\') < extension_idx) {
+                    extension = config->binary_path.substr(extension_idx);
+                }
+            }
+            config->output_path = config->binary_path + extension + "-patched";
+        }
         if (this->parser.is_used("-part_hash_len")) config->part_hash_len = this->parser.get<uint16_t>("part_hash_len");
         if (this->parser.is_used("-part_hash_trust"))
             config->part_hash_trust = this->parser.get<float>("part_hash_trust");

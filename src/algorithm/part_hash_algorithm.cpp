@@ -1,6 +1,5 @@
 #include <algorithm/part_hash_algorithm.h>
 #include <utils/convert.h>
-#include <iostream>
 
 using namespace std;
 
@@ -37,6 +36,7 @@ void PartHashAlgorithm::process_binary(vector<unique_ptr<FUNCTION>>* bin_funcs) 
 void PartHashAlgorithm::process_lib(string lib_path, vector<unique_ptr<FUNCTION>>* lib_funcs) {
     ifstream lib_file(lib_path, ios::binary);
     for (unique_ptr<FUNCTION>& lib_func : *lib_funcs) {
+        if(!lib_func->name.size()) continue;
         size_t lib_func_sz = lib_func->end - lib_func->start + 1;
         if(lib_func_sz < config->min_func_size) continue;
         for(unique_ptr<FUNCTION>& func : funcs_by_sz[lib_func_sz]) {

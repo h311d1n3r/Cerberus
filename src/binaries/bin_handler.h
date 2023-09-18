@@ -18,15 +18,17 @@ protected:
     LANG lang;
     Algorithm* algorithm;
     BIN_ARCH arch;
+    BIN_TYPE type;
     size_t image_base;
     bool stripped;
     std::vector<std::unique_ptr<LIBRARY>> libs;
     std::vector<std::unique_ptr<FUNCTION>> functions;
+    size_t matches_sz = 0;
     LiefExtractor* lief_extractor;
     RadareExtractor* radare_extractor;
 public:
-    BinaryHandler(std::string bin_path, std::string work_dir, LANG lang, Algorithm* algorithm, bool is_elf) : bin_path(bin_path), work_dir(work_dir), lang(lang), algorithm(algorithm) {
-        this->lief_extractor = new LiefExtractor(bin_path, is_elf);
+    BinaryHandler(std::string bin_path, std::string work_dir, LANG lang, Algorithm* algorithm, BIN_TYPE type) : bin_path(bin_path), work_dir(work_dir), lang(lang), algorithm(algorithm), type(type) {
+        this->lief_extractor = new LiefExtractor(bin_path, type);
         this->radare_extractor = new RadareExtractor(bin_path);
     }
     BIN_ARCH extract_architecture();

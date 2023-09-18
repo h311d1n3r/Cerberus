@@ -30,9 +30,10 @@ vector<PACKAGE*> packages = {
     new OS_PACKAGE{"binutils", "c++filt"},
     new OS_PACKAGE{"python3", "python3"},
     new OS_PACKAGE{"python3-pip", "pip3"},
-    new PIP3_PACKAGE{"pyinstaller", "pyinstaller"},
     new GIT_PACKAGE{"radare2", "radare2", "https://github.com/radareorg/radare2", 0, "cd .. ; mv radare2 ../ ; ../radare2/sys/install.sh", false},
     new GIT_PACKAGE{"Goliath", "goliath", "https://github.com/h311d1n3r/Goliath", 0, "cd .. ; mv Goliath ../ ; cd ../Goliath ; ./build.sh; mv ./dist/goliath "+install_dir, false, false},
+    new PIP3_PACKAGE{"pyinstaller", "pyinstaller"},
+    new CARGO_PACKAGE{"cross", "cross"},
     new CUSTOM_PACKAGE{"rust", "rustup", "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs > rust_install.sh ; sh +x rust_install.sh -y ; rm rust_install.sh"}
 };
 
@@ -53,6 +54,7 @@ bool install_dependencies(BinaryHandler* handler) {
     std::vector<OS_PACKAGE*> os_packages;
     std::vector<GIT_PACKAGE*> git_packages;
     std::vector<PIP3_PACKAGE*> pip3_packages;
+    std::vector<CARGO_PACKAGE*> cargo_packages;
     std::vector<CUSTOM_PACKAGE*> custom_packages;
     for(PACKAGE* package : packages) {
         if(!dep_manager.is_package_installed(package)) {
@@ -67,12 +69,15 @@ bool install_dependencies(BinaryHandler* handler) {
                     pip3_packages.push_back((PIP3_PACKAGE*) package);
                     break;
                 case 3:
+                    cargo_packages.push_back((CARGO_PACKAGE*) package);
+                    break;
+                case 4:
                     custom_packages.push_back((CUSTOM_PACKAGE*) package);
                     break;
             }
         }
     }
-    if(!os_packages.size() && !git_packages.size() && !pip3_packages.size() && !custom_packages.size()) fcout << "$(info)No additional package is required." << endl;
+    if(!os_packages.size() && !git_packages.size() && !pip3_packages.size() && !cargo_packages.size() && !custom_packages.size()) fcout << "$(info)No additional package is required." << endl;
     else {
         fcout << "$(info)The following packages are required :" << endl;
         if(os_packages.size()) {
@@ -91,6 +96,12 @@ bool install_dependencies(BinaryHandler* handler) {
             fcout << "$(bright_blue)With $(bright_blue:b)pip3$:" << endl;
             for (PIP3_PACKAGE *package : pip3_packages) {
                 fcout << "$(blue)- $(blue:b)" + package->package_name << endl;
+            }
+        }
+        if(cargo_packages.size()) {
+            fcout << "$(bright_yellow)With $(bright_yellow:b)cargo$:" << endl;
+            for (CARGO_PACKAGE *package : cargo_packages) {
+                fcout << "$(yellow)- $(yellow:b)" + package->package_name << endl;
             }
         }
         if(custom_packages.size()) {
@@ -128,6 +139,13 @@ bool install_dependencies(BinaryHandler* handler) {
                         }
                     }
                     for(PIP3_PACKAGE* package : pip3_packages) {
+                        if(dep_manager.install_package(package)) fcout << "$(success)Done." << endl;
+                        else {
+                            fcout << "$(error)An error occurred during installation..." << endl;
+                            return false;
+                        }
+                    }
+                    for(CARGO_PACKAGE* package : cargo_packages) {
                         if(dep_manager.install_package(package)) fcout << "$(success)Done." << endl;
                         else {
                             fcout << "$(error)An error occurred during installation..." << endl;
@@ -211,10 +229,19 @@ void start_analysis() {
     }
     fcout << "$(success)Analyzed $(success:b)" << to_string(funcs_sz) << "$ functions." << endl;
     fcout << "$(info)Matching with functions from libraries..." << endl;
+    string lib_extension;
+    switch(type) {
+        case BIN_TYPE::ELF:
+            lib_extension = ".so";
+            break;
+        case BIN_TYPE::PE:
+            lib_extension = ".dll";
+            break;
+    }
     for(const auto& entry : fs::directory_iterator(work_dir)) {
         if (fs::is_regular_file(entry)) {
             fs::path file_path = entry.path();
-            if(ends_with(file_path.filename(), ".so")) {
+            if(ends_with(file_path.filename(), lib_extension)) {
                 handler->functions_matching(file_path.string());
             }
         }

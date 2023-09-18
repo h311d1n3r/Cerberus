@@ -10,6 +10,7 @@ struct FUNCTION {
     std::string name;
     std::string hash;
     uint8_t score = 0;
+    size_t ordinal = 0;
 };
 
 struct SECTION {

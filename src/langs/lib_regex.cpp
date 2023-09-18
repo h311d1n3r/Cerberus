@@ -5,7 +5,9 @@ using namespace std;
 
 std::vector<std::string> rust_lib_regex = {
     "/.cargo/(.+?)\\.rs",
-    "/cargo/(.+?)\\.rs"
+    "/cargo/(.+?)\\.rs",
+    "\\\\.cargo\\\\(.+?)\\.rs",
+    "\\\\cargo\\\\(.+?)\\.rs"
 };
 
 std::vector<std::string> go_lib_regex = {
@@ -20,7 +22,7 @@ unique_ptr<LIBRARY> rust_extract_callback(string match) {
     if((null_term_index = match.find('\x00')) != string::npos) {
         match = match.substr(0, null_term_index);
     }
-    vector<string> match_parts = split_string(match, '/');
+    vector<string> match_parts = split_string(match, match.at(0));
     if(match_parts.size() < 6) return nullptr;
     string lib_and_version = match_parts.at(5);
     size_t delim_index;

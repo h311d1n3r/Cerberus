@@ -56,12 +56,21 @@ struct PIP3_PACKAGE : PACKAGE {
     }
 };
 
+struct CARGO_PACKAGE : PACKAGE {
+    std::string package_name;
+    CARGO_PACKAGE(std::string binary, std::string package_name) {
+        PACKAGE::package_type = 3;
+        PACKAGE::binary = binary;
+        CARGO_PACKAGE::package_name = package_name;
+    }
+};
+
 struct CUSTOM_PACKAGE : PACKAGE {
     std::string package_name;
     std::string command;
     int32_t success_code = 0;
     CUSTOM_PACKAGE(std::string package_name, std::string binary, std::string command) {
-        PACKAGE::package_type = 3;
+        PACKAGE::package_type = 4;
         PACKAGE::binary = binary;
         CUSTOM_PACKAGE::package_name = package_name;
         CUSTOM_PACKAGE::command = command;
@@ -86,6 +95,7 @@ public:
     bool install_package(OS_PACKAGE* package);
     bool install_package(GIT_PACKAGE* package);
     bool install_package(PIP3_PACKAGE* package);
+    bool install_package(CARGO_PACKAGE* package);
     bool install_package(CUSTOM_PACKAGE* package);
 };
 

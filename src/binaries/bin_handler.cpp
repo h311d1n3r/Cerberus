@@ -63,10 +63,10 @@ size_t BinaryHandler::libs_installation() {
     unique_ptr<LibInstaller> installer;
     switch(lang) {
         case RUST:
-            installer = make_unique<RustLibInstaller>(this->work_dir, this->arch);
+            installer = make_unique<RustLibInstaller>(this->work_dir, this->arch, this->type);
             break;
         case GO:
-            installer = make_unique<GoLibInstaller>(this->work_dir, this->arch);
+            installer = make_unique<GoLibInstaller>(this->work_dir, this->arch, this->type);
             break;
         default:
             return 0;
@@ -85,9 +85,8 @@ size_t BinaryHandler::libs_installation() {
 }
 
 size_t BinaryHandler::get_matches_sz() {
-    size_t matches = 0;
-    for(unique_ptr<FUNCTION>& func : this->functions) if(func->name.size()) matches++;
-    return matches;
+    for(unique_ptr<FUNCTION>& func : this->functions) if(func->name.size()) matches_sz++;
+    return matches_sz;
 }
 
 void BinaryHandler::demangle_functions() {
