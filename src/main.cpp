@@ -31,6 +31,7 @@ vector<PACKAGE*> packages = {
     new OS_PACKAGE{"binutils", "c++filt"},
     new OS_PACKAGE{"python3", "python3"},
     new OS_PACKAGE{"python3-pip", "pip3"},
+    new OS_PACKAGE{"patch", "patch"},
     new PIP3_PACKAGE{"pyinstaller", "pyinstaller"},
     new GIT_PACKAGE{"radare2", "radare2", "https://github.com/radareorg/radare2", 0, "cd .. ; mv radare2 ../ ; ../radare2/sys/install.sh", false},
     new GIT_PACKAGE{"Goliath", "goliath", "https://github.com/h311d1n3r/Goliath", 0, "cd .. ; mv Goliath ../ ; cd ../Goliath ; ./build.sh; mv ./dist/goliath "+install_dir, false, false},
@@ -42,7 +43,8 @@ void global_init() {
     elf_version(EV_CURRENT);
     curl_global_init(CURL_GLOBAL_ALL);
     string home_dir = string(getenv("HOME"));
-    if(fs::exists(install_dir)) fs::create_directories(install_dir);
+    replace_all((string&)install_dir, "~", home_dir);
+    if(!fs::exists(install_dir)) fs::create_directories(install_dir);
     const char* current_path = getenv("PATH");
     string new_path = string(current_path)+string(":")+install_dir;
     const char* go_path = getenv("GOPATH");
