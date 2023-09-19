@@ -1,0 +1,10 @@
+#ifndef CERBERUS_LANG_TYPES_H
+#define CERBERUS_LANG_TYPES_H
+
+enum LANG {
+    UNKNOWN_LANG,
+    RUST,
+    GO
+};
+
+#endif //CERBERUS_LANG_TYPES_H

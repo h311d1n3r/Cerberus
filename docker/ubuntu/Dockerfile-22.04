@@ -1,0 +1,17 @@
+FROM ubuntu:22.04
+
+WORKDIR /root
+
+RUN apt -y update
+RUN apt -y upgrade
+RUN apt -y install g++ gcc make cmake
+RUN apt -y install libarchive-dev libcurl4-openssl-dev zlib1g-dev libelf-dev uuid-dev
+
+RUN mkdir -p Cerberus
+WORKDIR Cerberus
+ADD ./ ./
+RUN mkdir -p build
+WORKDIR build
+
+RUN cmake ..
+RUN make
