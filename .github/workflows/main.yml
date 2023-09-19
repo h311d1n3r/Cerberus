@@ -33,7 +33,7 @@ jobs:
       with:
         python-version: '3.10'
     - name: compile
-      run: mkdir build && cmake .. && make
+      run: mkdir build && cd build && cmake .. && make
     - name: append_path
       run: echo "`pwd`/build" >> $GITHUB_PATH
     - name: compile_rust_tests
