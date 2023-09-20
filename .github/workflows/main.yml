@@ -16,7 +16,7 @@ jobs:
     - name: init_submodules
       run: git submodule update --init --recursive
     - name: apt_dependencies
-      run: sudo apt -y install libarchive-dev libcurl4-openssl-dev zlib1g-dev libelf-dev gcc g++ make cmake
+      run: sudo apt -y install libarchive-dev libcurl4-openssl-dev zlib1g-dev libelf-dev gcc-multilib g++-multilib make cmake
     - name: setup_radare2
       run: |
         git clone https://github.com/radare/radare2.git
