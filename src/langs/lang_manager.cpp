@@ -37,17 +37,22 @@ value_ordered_map<LANG, size_t> LangIdentifier::identify() {
     input_file.seekg(0, ios::end);
     size_t input_sz = input_file.tellg();
     input_file.seekg(0);
-    char input_data[input_sz];
-    input_file.read(input_data, input_sz);
-    for(pair<string, LANG> lang_pattern : LANG_PATTERNS) {
-        char* current_pos = input_data;
-        char* occurrence;
-        while(current_pos-input_data < input_sz) {
-            if ((occurrence = strstr(current_pos, lang_pattern.first.c_str())) != nullptr) {
-                current_pos = occurrence + lang_pattern.first.length();
-                matches[lang_pattern.second]++;
-            } else current_pos++;
+    char input_data[2048];
+    size_t input_off = 0;
+    while(input_off < input_sz) {
+        input_file.seekg(input_off);
+        input_file.read(input_data, sizeof(input_data));
+        for(pair<string, LANG> lang_pattern : LANG_PATTERNS) {
+            char* current_pos = input_data;
+            char* occurrence;
+            while(current_pos-input_data < sizeof(input_data)) {
+                if ((occurrence = strstr(current_pos, lang_pattern.first.c_str())) != nullptr) {
+                    current_pos = occurrence + lang_pattern.first.length();
+                    matches[lang_pattern.second]++;
+                } else current_pos++;
+            }
         }
+        input_off += 1024;
     }
     input_file.close();
     matches.invert_sort();

@@ -34,23 +34,28 @@ size_t BinaryHandler::libs_extraction() {
     bin_file.seekg(0, ios::end);
     size_t bin_file_sz = bin_file.tellg();
     bin_file.seekg(0);
-    char data[bin_file_sz];
-    bin_file.read(data, bin_file_sz);
-    for(string reg : lib_regex) {
-        vector<string> matches = search_regex(data, bin_file_sz, reg, 256);
-        for(string match : matches) {
-            unique_ptr<LIBRARY> lib = lib_extract_callbacks[lang](match);
-            if(lib) {
-                bool exists = false;
-                for(unique_ptr<LIBRARY>& lib2 : this->libs) {
-                    if(lib->name == lib2->name && lib->version == lib2->version) {
-                        exists = true;
-                        break;
+    size_t bin_file_off = 0;
+    char data[2048];
+    while(bin_file_off < bin_file_sz) {
+        bin_file.seekg(bin_file_off);
+        bin_file.read(data, sizeof(data));
+        for (string reg: lib_regex) {
+            vector<string> matches = search_regex(data, sizeof(data), reg, 256);
+            for (string match: matches) {
+                unique_ptr<LIBRARY> lib = lib_extract_callbacks[lang](match);
+                if (lib) {
+                    bool exists = false;
+                    for (unique_ptr<LIBRARY> &lib2: this->libs) {
+                        if (lib->name == lib2->name && lib->version == lib2->version) {
+                            exists = true;
+                            break;
+                        }
                     }
+                    if (!exists) this->libs.push_back(move(lib));
                 }
-                if(!exists) this->libs.push_back(move(lib));
             }
         }
+        bin_file_off += 1024;
     }
     sort(this->libs.begin(), this->libs.end(), [](const unique_ptr<LIBRARY>& a, const unique_ptr<LIBRARY>& b) {
         return a->name < b->name;
