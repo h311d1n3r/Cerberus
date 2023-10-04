@@ -27,7 +27,7 @@ vector<unique_ptr<FUNCTION>> LibelfExtractor::extract_functions_32(size_t image_
     while ((scn = elf_nextscn(this->bin, scn)) != nullptr) {
         Elf32_Shdr *shdr = elf32_getshdr(scn);
         if(!sym_scn) {
-            if(shdr->sh_type == SHT_SYMTAB) {
+            if(shdr->sh_type == SHT_SYMTAB || shdr->sh_type == SHT_DYNSYM) {
                 sym_scn = scn;
                 if(str_scn_start) break;
             }
@@ -71,7 +71,7 @@ vector<unique_ptr<FUNCTION>> LibelfExtractor::extract_functions_64(size_t image_
     while ((scn = elf_nextscn(this->bin, scn)) != nullptr) {
         Elf64_Shdr *shdr = elf64_getshdr(scn);
         if(!sym_scn) {
-            if(shdr->sh_type == SHT_SYMTAB) {
+            if(shdr->sh_type == SHT_SYMTAB || shdr->sh_type == SHT_DYNSYM) {
                 sym_scn = scn;
                 if(str_scn_start) break;
             }
