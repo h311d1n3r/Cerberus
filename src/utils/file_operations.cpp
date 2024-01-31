@@ -15,7 +15,8 @@ bool decompress_gzip_file(string input, string output) {
     input_file.seekg(0, ios::end);
     size_t input_file_sz = input_file.tellg();
     input_file.seekg(0);
-    char data[input_file_sz];
+    char* data = (char*) malloc(input_file_sz);
+    if(!data) return false;
     input_file.read(data, input_file_sz);
     input_file.close();
     if(!gzip::is_compressed(data, input_file_sz)) return false;
@@ -23,6 +24,7 @@ bool decompress_gzip_file(string input, string output) {
     ofstream output_file(output, ios::binary);
     output_file.write(decompressed.c_str(), decompressed.size());
     output_file.close();
+    free(data);
     return true;
 }
 
