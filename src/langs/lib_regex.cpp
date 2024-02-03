@@ -6,8 +6,10 @@ using namespace std;
 std::vector<std::string> rust_lib_regex = {
     "/.cargo/(.+?)\\.rs",
     "/cargo/(.+?)\\.rs",
+    "index\\.crates\\.io-(.+?)\\\\(.+?)\\\\",
     "\\\\.cargo\\\\(.+?)\\.rs",
-    "\\\\cargo\\\\(.+?)\\.rs"
+    "\\\\cargo\\\\(.+?)\\.rs",
+    "index\\.crates\\.io-(.+?)/(.+?)/",
 };
 
 std::vector<std::string> go_lib_regex = {
@@ -24,9 +26,19 @@ unique_ptr<LIBRARY> rust_extract_callback(string match) {
     if((null_term_index = match.find('\x00')) != string::npos) {
         match = match.substr(0, null_term_index);
     }
-    vector<string> match_parts = split_string(match, match.at(0));
-    if(match_parts.size() < 6) return nullptr;
-    string lib_and_version = match_parts.at(5);
+    string lib_and_version = "";
+    if(!match.find("index.crates.io-")) {
+        size_t delim_index = match.find("/");
+        if(!delim_index) delim_index = match.find("\\");
+        if(!delim_index) return nullptr;
+        vector<string> match_parts = split_string(match, match.at(delim_index));
+        if(match_parts.size() < 2) return nullptr;
+        lib_and_version = match_parts.at(1);
+    } else {
+        vector<string> match_parts = split_string(match, match.at(0));
+        if(match_parts.size() < 6) return nullptr;
+        lib_and_version = match_parts.at(5);
+    }
     size_t delim_index;
     if((delim_index = lib_and_version.rfind('-')) == string::npos) return nullptr;
     unique_ptr<LIBRARY> lib = make_unique<LIBRARY>();
