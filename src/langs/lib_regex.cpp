@@ -27,10 +27,10 @@ unique_ptr<LIBRARY> rust_extract_callback(string match) {
         match = match.substr(0, null_term_index);
     }
     string lib_and_version = "";
-    if(!match.find("index.crates.io-")) {
+    if(match.find("index.crates.io-") != string::npos) {
         size_t delim_index = match.find("/");
-        if(!delim_index) delim_index = match.find("\\");
-        if(!delim_index) return nullptr;
+        if(delim_index == string::npos) delim_index = match.find("\\");
+        if(delim_index == string::npos) return nullptr;
         vector<string> match_parts = split_string(match, match.at(delim_index));
         if(match_parts.size() < 2) return nullptr;
         lib_and_version = match_parts.at(1);
