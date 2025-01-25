@@ -30,17 +30,18 @@ Check the [Releases](https://github.com/h311d1n3r/Cerberus/releases/) tab on the
 <a name="install_build_docker"/>
 
 ### Build the tool with Docker
-1. Clone the repository `git clone https://github.com/h311d1n3r/Cerberus && cd cerberus`.
-2. Check the available Dockerfiles under `Cerberus/docker/{OS}`.  
-3. Build the docker image of your choice `docker build -f ./docker/{OS}/Dockerfile-{version} .`.
-4. You can run **Cerberus** from inside the docker or extract the binary on your host. This second choice needs to install the libraries listed in [this section](#install_build_host).  
+1. Clone the repository `git clone https://github.com/h311d1n3r/Cerberus && cd Cerberus`.
+2. Initialize git dependencies : `git submodule update --init`  
+3. Check the available Dockerfiles under `Cerberus/docker/{OS}`.  
+4. Build the docker image of your choice `docker build -f ./docker/{OS}/Dockerfile-{version} .`.
+5. You can run **Cerberus** from inside the docker or extract the binary on your host. This second choice needs to install the libraries listed in [this section](#install_build_host).  
 
 <a name="install_build_host"/>
 
 ### Build the tool on host  
 1. You need to have **libarchive**, **libcurl4-openssl**, **zlib1g**, **libelf** and the **uuid-dev** libraries installed on your system.  
 With APT just do `apt -y install libarchive-dev libcurl4-openssl-dev zlib1g-dev libelf-dev`
-2. Clone the repository `git clone https://github.com/h311d1n3r/Cerberus && cd cerberus`.
+2. Clone the repository `git clone https://github.com/h311d1n3r/Cerberus && cd Cerberus`.
 3. Initialize git dependencies : `git submodule update --init`  
 4. Create the build directory `mkdir build && cd build`.  
 5. Run CMake to configure the project `cmake ..`.
